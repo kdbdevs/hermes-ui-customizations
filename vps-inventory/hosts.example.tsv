@@ -1,0 +1,2 @@
+# host	user	auth	ref	tags	notes
+104.64.209.22	root	ssh-key	hermes-main	hermes,cloudflare,agent	Main Hermes VPS
