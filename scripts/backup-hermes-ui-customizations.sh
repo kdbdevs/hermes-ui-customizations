@@ -29,7 +29,9 @@ fi
 cp -f "$HERMES_SRC/plugins/kanban/dashboard/dist/index.js" plugins/kanban/dashboard/dist/index.js
 cp -f "$HERMES_SRC/plugins/kanban/dashboard/dist/style.css" plugins/kanban/dashboard/dist/style.css
 
-cp -f "$0" scripts/backup-hermes-ui-customizations.sh
+if [ "$(readlink -f "$0")" != "$(readlink -f scripts/backup-hermes-ui-customizations.sh)" ]; then
+  cp -f "$0" scripts/backup-hermes-ui-customizations.sh
+fi
 chmod +x scripts/backup-hermes-ui-customizations.sh
 
 cat > metadata/manifest.txt <<MANIFEST
