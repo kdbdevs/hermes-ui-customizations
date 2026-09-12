@@ -26,6 +26,7 @@ TITLE="${5:-$SLUG}"
 SUMMARY="${6:-Hermes fullstack app}"
 ROOT="${HERMES_APP_LAB_ROOT:-/var/lib/hermes-apps}"
 REGISTRY="$ROOT/registry.json"
+DOMAIN_ROOT="${HERMES_APP_LAB_DOMAIN_ROOT:-apps.cloudnes.space}"
 
 if [[ ! -d "$APP_DIR" ]]; then
   echo "App directory not found: $APP_DIR" >&2
@@ -110,4 +111,4 @@ sleep 2
 
 echo "Service: hermes-app-${SLUG}.service"
 echo "Local:   http://127.0.0.1:${PORT}/"
-echo "Public:  https://${SLUG}.apps.cloudnes.space/"
+echo "Public:  https://${SLUG}.${DOMAIN_ROOT}/"

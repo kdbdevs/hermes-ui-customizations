@@ -10,7 +10,8 @@ const { URL } = require("url");
 const HOST = process.env.HERMES_APP_LAB_HOST || "127.0.0.1";
 const PORT = Number(process.env.HERMES_APP_LAB_PORT || "18080");
 const REGISTRY_PATH = process.env.HERMES_APP_LAB_REGISTRY || "/var/lib/hermes-apps/registry.json";
-const PUBLIC_BASE = (process.env.HERMES_APP_LAB_PUBLIC_BASE || "https://apps.cloudnes.space").replace(/\/+$/, "");
+const DOMAIN_ROOT = (process.env.HERMES_APP_LAB_DOMAIN_ROOT || "apps.cloudnes.space").toLowerCase().replace(/^\*\./, "").replace(/\/+$/, "");
+const PUBLIC_BASE = (process.env.HERMES_APP_LAB_PUBLIC_BASE || `https://${DOMAIN_ROOT}`).replace(/\/+$/, "");
 
 let registryMtime = 0;
 let registry = { apps: {} };
@@ -39,9 +40,9 @@ function escapeHtml(value) {
 
 function slugFromHost(hostHeader) {
   const host = String(hostHeader || "").split(":")[0].toLowerCase();
-  if (host === "apps.cloudnes.space") return "";
-  if (host.endsWith(".apps.cloudnes.space")) {
-    return host.slice(0, -".apps.cloudnes.space".length);
+  if (host === DOMAIN_ROOT) return "";
+  if (host.endsWith(`.${DOMAIN_ROOT}`)) {
+    return host.slice(0, -`.${DOMAIN_ROOT}`.length);
   }
   return "";
 }
@@ -51,7 +52,7 @@ function catalogHtml() {
   const rows = Object.entries(apps)
     .sort(([, a], [, b]) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")))
     .map(([slug, app]) => {
-      const url = `https://${slug}.apps.cloudnes.space/`;
+      const url = `https://${slug}.${DOMAIN_ROOT}/`;
       return `<a class="card" href="${url}">
         <span>${escapeHtml(app.title || slug)}</span>
         <small>${escapeHtml(app.summary || "Hermes fullstack app")}</small>
