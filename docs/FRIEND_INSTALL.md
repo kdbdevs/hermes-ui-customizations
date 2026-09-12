@@ -81,36 +81,21 @@ sudo -i
 git clone git@github.com-hermes-ui:kdbdevs/hermes-ui-customizations.git /root/hermes-ui-customizations
 cd /root/hermes-ui-customizations
 
-HERMES_PREVIEW_BASE_URL=https://preview.friend-domain.com \
-HERMES_APP_LAB_DOMAIN_ROOT=apps.friend-domain.com \
-./install.sh
+HERMES_PREVIEW_BASE_URL=https://preview.friend-domain.com ./install.sh
 ```
 
-If the friend only wants the theme and Kanban UI, disable labs:
+If the friend only wants the theme and Kanban UI, disable Preview Lab:
 
 ```bash
-INSTALL_PREVIEW_LAB=0 \
-INSTALL_APP_LAB=0 \
-INSTALL_VPS_INVENTORY=0 \
-./install.sh
+INSTALL_PREVIEW_LAB=0 ./install.sh
 ```
 
 ## 5. Cloudflare Tunnel Routes
 
-If Preview Lab and App Lab are enabled, add these routes in the friend's
-Cloudflare Tunnel:
+If Preview Lab is enabled, add this route in the friend's Cloudflare Tunnel:
 
 ```text
 preview.friend-domain.com       -> HTTP localhost:8088
-apps.friend-domain.com          -> HTTP localhost:18080
-*.apps.friend-domain.com        -> HTTP localhost:18080
-```
-
-The exact `apps.friend-domain.com` route is for the catalog. The wildcard route
-is for each app URL, for example:
-
-```text
-shoe-crm.apps.friend-domain.com
 ```
 
 ## 6. Auto-Pull Updates
@@ -140,14 +125,12 @@ Check installed services:
 
 ```bash
 systemctl status hermes-preview-lab.service
-systemctl status hermes-app-lab.service
 ```
 
-Check local health endpoints:
+Check local health endpoint:
 
 ```bash
 curl -fsS http://127.0.0.1:8088/health
-curl -fsS http://127.0.0.1:18080/health
 ```
 
 Open Hermes UI and select:
