@@ -27,7 +27,6 @@ sudo -i
 git clone git@github.com-hermes-ui:kdbdevs/hermes-ui-customizations.git /root/hermes-ui-customizations
 cd /root/hermes-ui-customizations
 
-HERMES_PREVIEW_BASE_URL=https://preview.friend-domain.com \
 ./install.sh
 ```
 

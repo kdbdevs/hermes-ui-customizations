@@ -8,7 +8,6 @@ Type=simple
 Environment=HERMES_PREVIEW_ROOT=/var/lib/hermes-previews/sites
 Environment=HERMES_PREVIEW_HOST=127.0.0.1
 Environment=HERMES_PREVIEW_PORT=8088
-Environment=HERMES_PREVIEW_BASE_URL=https://preview.cloudnes.space
 ExecStart=/usr/bin/python3 /opt/hermes-preview-lab/preview_server.py
 Restart=always
 RestartSec=3

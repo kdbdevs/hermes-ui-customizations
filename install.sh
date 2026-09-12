@@ -5,7 +5,6 @@ REPO_URL="${HERMES_UI_REPO_URL:-git@github.com:kdbdevs/hermes-ui-customizations.
 INSTALL_ROOT="${HERMES_UI_CUSTOMIZATIONS_DIR:-/root/hermes-ui-customizations}"
 HERMES_HOME="${HERMES_HOME:-/root/.hermes}"
 HERMES_AGENT_DIR="${HERMES_AGENT_DIR:-/usr/local/lib/hermes-agent}"
-PREVIEW_BASE_URL="${HERMES_PREVIEW_BASE_URL:-https://preview.cloudnes.space}"
 
 INSTALL_THEME="${INSTALL_THEME:-1}"
 INSTALL_KANBAN_WORKFLOW="${INSTALL_KANBAN_WORKFLOW:-1}"
@@ -120,15 +119,14 @@ install_preview_lab() {
   install -m 0755 preview-lab/preview_server.py /opt/hermes-preview-lab/preview_server.py
   install -m 0755 preview-lab/hermes-preview-publish /usr/local/bin/hermes-preview-publish
 
-  sed "s#^Environment=HERMES_PREVIEW_BASE_URL=.*#Environment=HERMES_PREVIEW_BASE_URL=${PREVIEW_BASE_URL}#" \
-    preview-lab/hermes-preview-lab.service > /etc/systemd/system/hermes-preview-lab.service
+  install -m 0644 preview-lab/hermes-preview-lab.service /etc/systemd/system/hermes-preview-lab.service
 
   systemctl daemon-reload
   systemctl enable --now hermes-preview-lab.service
   systemctl restart hermes-preview-lab.service
 
   copy_skill_to_profiles preview-lab/SKILL.md productivity preview-lab
-  log "Installed Preview Lab at $PREVIEW_BASE_URL"
+  log "Installed Preview Lab on 127.0.0.1:8088"
 }
 
 install_auto_sync() {
@@ -190,9 +188,6 @@ Hermes UI customizations installed.
 
 Theme:
   Open Hermes UI -> Config/System -> Theme -> select "n8n Workflow".
-
-Recommended Cloudflare Tunnel routes:
-  preview subdomain -> http://localhost:8088
 
 Manual update:
   ${INSTALL_ROOT}/sync.sh

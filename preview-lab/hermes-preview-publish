@@ -21,7 +21,6 @@ SLUG="$2"
 TITLE="${3:-$SLUG}"
 SUMMARY="${4:-Hermes generated preview}"
 ROOT="${HERMES_PREVIEW_ROOT:-/var/lib/hermes-previews/sites}"
-BASE_URL="${HERMES_PREVIEW_BASE_URL:-https://preview.cloudnes.space}"
 
 if [[ ! -d "$SRC" ]]; then
   echo "Source directory not found: $SRC" >&2
@@ -64,4 +63,4 @@ rm -rf "$DEST"
 mv "$TMP" "$DEST"
 chmod -R u=rwX,go=rX "$DEST"
 
-echo "${BASE_URL%/}/sites/$SLUG/"
+echo "/sites/$SLUG/"

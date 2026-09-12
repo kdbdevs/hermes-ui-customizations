@@ -16,7 +16,6 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(os.environ.get("HERMES_PREVIEW_ROOT", "/var/lib/hermes-previews/sites")).resolve()
 HOST = os.environ.get("HERMES_PREVIEW_HOST", "127.0.0.1")
 PORT = int(os.environ.get("HERMES_PREVIEW_PORT", "8088"))
-BASE_URL = os.environ.get("HERMES_PREVIEW_BASE_URL", "https://preview.cloudnes.space").rstrip("/")
 
 
 def _read_meta(site_dir: Path) -> dict:
@@ -123,7 +122,6 @@ def _index_html() -> bytes:
       <h1>Hermes Preview Lab</h1>
       <p>Live location for Hermes UI, wireframe, landing page, and prototype demonstrations.</p>
     </div>
-    <code>{html.escape(BASE_URL)}</code>
   </header>
   <main><section class="grid">{_site_rows()}</section></main>
 </body>

@@ -74,14 +74,12 @@ accepted.
 
 ## 4. Clone and Install
 
-Replace these domains with the friend's Cloudflare routes:
-
 ```bash
 sudo -i
 git clone git@github.com-hermes-ui:kdbdevs/hermes-ui-customizations.git /root/hermes-ui-customizations
 cd /root/hermes-ui-customizations
 
-HERMES_PREVIEW_BASE_URL=https://preview.friend-domain.com ./install.sh
+./install.sh
 ```
 
 If the friend only wants the theme and Kanban UI, disable Preview Lab:
@@ -90,15 +88,7 @@ If the friend only wants the theme and Kanban UI, disable Preview Lab:
 INSTALL_PREVIEW_LAB=0 ./install.sh
 ```
 
-## 5. Cloudflare Tunnel Routes
-
-If Preview Lab is enabled, add this route in the friend's Cloudflare Tunnel:
-
-```text
-preview.friend-domain.com       -> HTTP localhost:8088
-```
-
-## 6. Auto-Pull Updates
+## 5. Auto-Pull Updates
 
 The installer creates this systemd timer:
 
@@ -119,7 +109,7 @@ sudo -i
 /root/hermes-ui-customizations/sync.sh
 ```
 
-## 7. Verify
+## 6. Verify
 
 Check installed services:
 
