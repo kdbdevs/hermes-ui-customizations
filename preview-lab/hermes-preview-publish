@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  hermes-preview-publish <source_dir> <slug> [title] [summary]
+
+Copies a built/static UI artifact into the Hermes Preview Lab and prints its URL.
+The source directory must contain index.html.
+USAGE
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -lt 2 ]]; then
+  usage
+  exit 0
+fi
+
+SRC="$1"
+SLUG="$2"
+TITLE="${3:-$SLUG}"
+SUMMARY="${4:-Hermes generated preview}"
+ROOT="${HERMES_PREVIEW_ROOT:-/var/lib/hermes-previews/sites}"
+BASE_URL="${HERMES_PREVIEW_BASE_URL:-https://preview.cloudnes.space}"
+
+if [[ ! -d "$SRC" ]]; then
+  echo "Source directory not found: $SRC" >&2
+  exit 1
+fi
+
+if [[ ! -f "$SRC/index.html" ]]; then
+  echo "Source directory must contain index.html: $SRC" >&2
+  exit 1
+fi
+
+if [[ ! "$SLUG" =~ ^[a-z0-9][a-z0-9-]{1,62}$ ]]; then
+  echo "Invalid slug. Use lowercase letters, numbers, and hyphens only." >&2
+  exit 1
+fi
+
+DEST="$ROOT/$SLUG"
+TMP="$ROOT/.tmp-$SLUG-$$"
+mkdir -p "$ROOT"
+rm -rf "$TMP"
+mkdir -p "$TMP"
+cp -a "$SRC"/. "$TMP"/
+
+python3 - "$TMP/.hermes-preview.json" "$TITLE" "$SUMMARY" <<'PY'
+import datetime as dt
+import json
+import sys
+
+path, title, summary = sys.argv[1:4]
+meta = {
+    "title": title,
+    "summary": summary,
+    "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+}
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(meta, f, ensure_ascii=False, indent=2)
+PY
+
+rm -rf "$DEST"
+mv "$TMP" "$DEST"
+chmod -R u=rwX,go=rX "$DEST"
+
+echo "${BASE_URL%/}/sites/$SLUG/"
