@@ -260,6 +260,274 @@ customCSS: |
     box-shadow: 0 0 0 1px rgba(255, 109, 90, 0.34), 0 0 34px rgba(255, 109, 90, 0.26) !important;
   }
 
+  html[data-layout-variant="tiled"] {
+    --color-card: rgba(23, 19, 32, 0.94);
+    --color-card-foreground: var(--n8n-text);
+    --color-popover: rgba(14, 10, 22, 0.96);
+    --color-popover-foreground: var(--n8n-text);
+    --color-secondary: rgba(39, 34, 51, 0.94);
+    --color-muted: rgba(33, 28, 44, 0.88);
+    --color-muted-foreground: var(--n8n-muted);
+    --color-accent: rgba(255, 109, 90, 0.12);
+    --color-accent-foreground: var(--n8n-text);
+    --color-border: var(--n8n-border);
+    --color-input: rgba(154, 147, 171, 0.28);
+    --color-ring: var(--n8n-coral);
+    color-scheme: dark;
+  }
+
+  html[data-layout-variant="tiled"] * {
+    scrollbar-color: rgba(154, 147, 171, 0.34) transparent;
+  }
+
+  html[data-layout-variant="tiled"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  html[data-layout-variant="tiled"] ::-webkit-scrollbar-thumb {
+    background: rgba(154, 147, 171, 0.28);
+    border-radius: 999px;
+  }
+
+  html[data-layout-variant="tiled"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 109, 90, 0.5);
+  }
+
+  html[data-layout-variant="tiled"] .bg-background,
+  html[data-layout-variant="tiled"] [class*="bg-background"] {
+    background-color: transparent !important;
+  }
+
+  html[data-layout-variant="tiled"] .bg-background-base,
+  html[data-layout-variant="tiled"] [class*="bg-background-base"] {
+    background-color: rgba(11, 7, 19, 0.86) !important;
+  }
+
+  html[data-layout-variant="tiled"] .bg-card,
+  html[data-layout-variant="tiled"] [class*="bg-card"],
+  html[data-layout-variant="tiled"] [class*="bg-secondary"],
+  html[data-layout-variant="tiled"] [class*="bg-muted"] {
+    background: linear-gradient(180deg, rgba(35, 30, 46, 0.94), rgba(19, 15, 28, 0.94)) !important;
+  }
+
+  html[data-layout-variant="tiled"] .border,
+  html[data-layout-variant="tiled"] [class*="border-border"],
+  html[data-layout-variant="tiled"] [class*="border-midground"],
+  html[data-layout-variant="tiled"] [class*="border-current"] {
+    border-color: var(--n8n-border) !important;
+  }
+
+  html[data-layout-variant="tiled"] .text-midground,
+  html[data-layout-variant="tiled"] [class*="text-midground"] {
+    color: var(--n8n-text) !important;
+  }
+
+  html[data-layout-variant="tiled"] .text-text-secondary,
+  html[data-layout-variant="tiled"] [class*="text-text-secondary"],
+  html[data-layout-variant="tiled"] .text-muted-foreground,
+  html[data-layout-variant="tiled"] [class*="text-muted-foreground"] {
+    color: var(--n8n-muted) !important;
+  }
+
+  html[data-layout-variant="tiled"] .text-text-tertiary,
+  html[data-layout-variant="tiled"] [class*="text-text-tertiary"] {
+    color: var(--n8n-faint) !important;
+  }
+
+  html[data-layout-variant="tiled"] a:not(#app-sidebar a) {
+    color: #d7ceff;
+    text-decoration-color: rgba(255, 109, 90, 0.38);
+    transition: color 140ms ease, text-decoration-color 140ms ease;
+  }
+
+  html[data-layout-variant="tiled"] a:not(#app-sidebar a):hover {
+    color: #fff7f1;
+    text-decoration-color: var(--n8n-coral);
+  }
+
+  html[data-layout-variant="tiled"] h1,
+  html[data-layout-variant="tiled"] h2,
+  html[data-layout-variant="tiled"] h3,
+  html[data-layout-variant="tiled"] h4 {
+    color: #fff9f5 !important;
+  }
+
+  html[data-layout-variant="tiled"] main > div,
+  html[data-layout-variant="tiled"] main section,
+  html[data-layout-variant="tiled"] [class*="rounded"][class*="border"] {
+    border-color: var(--n8n-border) !important;
+  }
+
+  html[data-layout-variant="tiled"] main [class*="rounded"][class*="border"]:not(.hermes-kanban-flow):not(.hermes-kanban-flow-node):not(.hermes-kanban-card) {
+    background: linear-gradient(180deg, rgba(25, 20, 35, 0.86), rgba(14, 10, 22, 0.86)) !important;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.18);
+  }
+
+  html[data-layout-variant="tiled"] button,
+  html[data-layout-variant="tiled"] [role="button"] {
+    min-height: 2rem;
+    border-color: rgba(154, 147, 171, 0.38) !important;
+    color: var(--n8n-text);
+  }
+
+  html[data-layout-variant="tiled"] button[class*="bg-midground"],
+  html[data-layout-variant="tiled"] button[class*="bg-primary"],
+  html[data-layout-variant="tiled"] button[class*="text-background"] {
+    background: linear-gradient(180deg, #ff7a66, #ff5a45) !important;
+    border-color: rgba(255, 109, 90, 0.72) !important;
+    color: #170807 !important;
+    box-shadow: 0 8px 22px rgba(255, 109, 90, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    font-weight: 650;
+  }
+
+  html[data-layout-variant="tiled"] button[class*="bg-midground"]:hover,
+  html[data-layout-variant="tiled"] button[class*="bg-primary"]:hover,
+  html[data-layout-variant="tiled"] button[class*="text-background"]:hover {
+    box-shadow: 0 12px 30px rgba(255, 109, 90, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  }
+
+  html[data-layout-variant="tiled"] button:not([class*="bg-midground"]):not([class*="bg-primary"]):not(.hermes-kanban-view-toggle-btn--active):hover,
+  html[data-layout-variant="tiled"] [role="button"]:hover {
+    background-color: rgba(255, 255, 255, 0.055) !important;
+    border-color: rgba(181, 174, 196, 0.5) !important;
+  }
+
+  html[data-layout-variant="tiled"] input,
+  html[data-layout-variant="tiled"] textarea,
+  html[data-layout-variant="tiled"] select {
+    min-height: 2.25rem;
+    border-radius: 8px !important;
+  }
+
+  html[data-layout-variant="tiled"] input::placeholder,
+  html[data-layout-variant="tiled"] textarea::placeholder {
+    color: rgba(169, 162, 183, 0.62) !important;
+  }
+
+  html[data-layout-variant="tiled"] label,
+  html[data-layout-variant="tiled"] [class*="uppercase"] {
+    letter-spacing: 0.08em !important;
+  }
+
+  html[data-layout-variant="tiled"] table,
+  html[data-layout-variant="tiled"] [role="table"] {
+    background: rgba(11, 7, 19, 0.38);
+    border-color: var(--n8n-border) !important;
+  }
+
+  html[data-layout-variant="tiled"] thead,
+  html[data-layout-variant="tiled"] [role="rowgroup"]:first-child {
+    background: rgba(255, 255, 255, 0.055) !important;
+    color: #fff9f5;
+  }
+
+  html[data-layout-variant="tiled"] tr,
+  html[data-layout-variant="tiled"] [role="row"] {
+    border-color: rgba(154, 147, 171, 0.18) !important;
+  }
+
+  html[data-layout-variant="tiled"] tbody tr:hover,
+  html[data-layout-variant="tiled"] [role="row"]:hover {
+    background: rgba(255, 109, 90, 0.075) !important;
+  }
+
+  html[data-layout-variant="tiled"] code,
+  html[data-layout-variant="tiled"] kbd,
+  html[data-layout-variant="tiled"] pre {
+    background: rgba(5, 3, 9, 0.62) !important;
+    color: #f8efff !important;
+    border-color: rgba(154, 147, 171, 0.24) !important;
+  }
+
+  html[data-layout-variant="tiled"] [data-slot="dialog-content"],
+  html[data-layout-variant="tiled"] [data-slot="dialog-overlay"] + *,
+  html[data-layout-variant="tiled"] [role="dialog"] {
+    border-radius: 12px !important;
+  }
+
+  html[data-layout-variant="tiled"] [data-slot="dialog-content"],
+  html[data-layout-variant="tiled"] [role="dialog"] {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255, 109, 90, 0.1), transparent 18rem),
+      linear-gradient(180deg, rgba(22, 17, 31, 0.98), rgba(10, 7, 15, 0.98)) !important;
+  }
+
+  html[data-layout-variant="tiled"] [data-slot="dialog-header"],
+  html[data-layout-variant="tiled"] [data-slot="dialog-footer"] {
+    border-color: var(--n8n-border) !important;
+  }
+
+  html[data-layout-variant="tiled"] [role="listbox"] [role="option"],
+  html[data-layout-variant="tiled"] [role="menu"] [role="menuitem"] {
+    border-radius: 8px;
+    margin: 2px;
+  }
+
+  html[data-layout-variant="tiled"] [data-state="checked"],
+  html[data-layout-variant="tiled"] [aria-checked="true"] {
+    border-color: rgba(255, 109, 90, 0.56) !important;
+    background-color: rgba(255, 109, 90, 0.16) !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="text-success"],
+  html[data-layout-variant="tiled"] [class*="text-emerald"] {
+    color: var(--n8n-green) !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="text-warning"],
+  html[data-layout-variant="tiled"] [class*="text-amber"] {
+    color: var(--n8n-orange, #ffb84d) !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="text-destructive"],
+  html[data-layout-variant="tiled"] [class*="text-red"] {
+    color: #ff6476 !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="bg-success"],
+  html[data-layout-variant="tiled"] [class*="bg-emerald"] {
+    background-color: rgba(49, 201, 111, 0.14) !important;
+    border-color: rgba(49, 201, 111, 0.38) !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="bg-warning"],
+  html[data-layout-variant="tiled"] [class*="bg-amber"] {
+    background-color: rgba(255, 184, 77, 0.14) !important;
+    border-color: rgba(255, 184, 77, 0.36) !important;
+  }
+
+  html[data-layout-variant="tiled"] [class*="bg-destructive"],
+  html[data-layout-variant="tiled"] [class*="bg-red"] {
+    background-color: rgba(255, 78, 97, 0.14) !important;
+    border-color: rgba(255, 78, 97, 0.38) !important;
+  }
+
+  html[data-layout-variant="tiled"] .xterm,
+  html[data-layout-variant="tiled"] .xterm-viewport,
+  html[data-layout-variant="tiled"] .xterm-screen {
+    background: #07040d !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-flow-header {
+    background: linear-gradient(90deg, rgba(18, 11, 30, 0.95), rgba(18, 11, 30, 0.4)) !important;
+    border-color: rgba(154, 147, 171, 0.22) !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-flow-toolbar button {
+    background: rgba(12, 8, 18, 0.68) !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-flow-status-btn {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-flow-status-btn--active {
+    background: linear-gradient(90deg, rgba(255, 109, 90, 0.28), rgba(255, 255, 255, 0.05)) !important;
+    border-color: rgba(255, 109, 90, 0.38) !important;
+  }
+
   .hermes-kanban-flow-wire--running {
     stroke: var(--n8n-coral) !important;
     filter: drop-shadow(0 0 7px rgba(255, 109, 90, 0.72)) !important;
