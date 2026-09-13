@@ -172,6 +172,7 @@
 }
 .hermes-kanban-dot-triage   { background: #b47dd6; }  /* lilac — fresh/unspecified */
 .hermes-kanban-dot-todo     { background: var(--color-muted-foreground); }
+.hermes-kanban-dot-scheduled { background: #62c7ff; } /* blue — queued future run */
 .hermes-kanban-dot-ready    { background: #d4b348; }  /* amber */
 .hermes-kanban-dot-running  { background: #3fb97d; }  /* green */
 .hermes-kanban-dot-blocked  { background: var(--color-destructive, #d14a4a); }
@@ -1838,6 +1839,7 @@
 .hermes-kanban-flow-tone--blocked::before { background: #ff4e61; }
 .hermes-kanban-flow-tone--done::before { background: #32ce72; }
 .hermes-kanban-flow-tone--ready::before { background: #62c7ff; }
+.hermes-kanban-flow-tone--scheduled::before { background: #62c7ff; }
 
 .hermes-kanban-flow-canvas-wrap {
   position: relative;
@@ -1904,6 +1906,10 @@
   stroke: rgba(50, 206, 114, 0.62);
 }
 
+.hermes-kanban-flow-wire--scheduled {
+  stroke: rgba(98, 199, 255, 0.64);
+}
+
 @keyframes hermes-kanban-flow-move {
   to { stroke-dashoffset: -22; }
 }
@@ -1960,6 +1966,11 @@
 .hermes-kanban-flow-node--review {
   border-color: #7967ff;
   box-shadow: 0 0 0 1px rgba(121, 103, 255, 0.34), 0 0 30px rgba(121, 103, 255, 0.2);
+}
+
+.hermes-kanban-flow-node--scheduled {
+  border-color: #62c7ff;
+  box-shadow: 0 0 0 1px rgba(98, 199, 255, 0.28), 0 0 26px rgba(98, 199, 255, 0.16);
 }
 
 .hermes-kanban-flow-node--blocked {
