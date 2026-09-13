@@ -1316,6 +1316,8 @@
         }),
         viewMode === "flow" ? h(WorkflowFlowView, {
           board: filteredBoard,
+          boardSlug: board,
+          boardMeta: boardList.find(function (item) { return item.slug === board; }) || null,
           onOpen: setSelectedTaskId,
           onRefresh: loadBoard,
         }) : h(BoardColumns, {
@@ -2898,7 +2900,30 @@
   }
 
   function clampFlowZoom(value) {
-    return Math.min(1.85, Math.max(0.45, value));
+    return Math.min(2.4, Math.max(0.32, value));
+  }
+
+  function readFlowLayout(key) {
+    if (!key || typeof window === "undefined" || !window.localStorage) return {};
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(key) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (_e) {
+      return {};
+    }
+  }
+
+  function writeFlowLayout(key, layout) {
+    if (!key || typeof window === "undefined" || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(key, JSON.stringify(layout || {}));
+    } catch (_e) {
+      // Storage can be blocked in hardened browsers; the flow should still work.
+    }
+  }
+
+  function flowLayoutStorageKey(boardSlug, selectedStatus) {
+    return "hermes-kanban-flow-layout-v2:" + flowClassName(boardSlug || "default") + ":" + flowClassName(selectedStatus || "running");
   }
 
   function flattenFlowTasks(board) {
@@ -2918,85 +2943,246 @@
     return tasks;
   }
 
-  function buildFlowNodes(board) {
+  function buildFlowNodes(board, selectedStatus, layout) {
     const columns = (board && Array.isArray(board.columns)) ? board.columns : [];
-    const laneColumns = columns.filter(function (column) {
-      return column.tasks && column.tasks.length;
-    });
-    const allTasks = flattenFlowTasks(board).slice(0, 42);
-    const columnIndexByName = {};
-    laneColumns.forEach(function (column, index) {
-      columnIndexByName[column.name] = index;
-    });
+    const selectedColumn = columns.find(function (column) {
+      return column.name === selectedStatus;
+    }) || columns.find(function (column) {
+      return column.name === "running";
+    }) || columns[0] || null;
+    const selectedName = (selectedColumn && selectedColumn.name) || selectedStatus || "running";
+    const allBoardTasks = flattenFlowTasks(board);
+    const visibleTasks = allBoardTasks.filter(function (task) {
+      return (task._flowStatus || "unknown") === selectedName;
+    }).slice(0, 42);
 
     const buckets = {};
-    allTasks.forEach(function (task) {
-      const status = task._flowStatus || "unknown";
-      if (!buckets[status]) buckets[status] = [];
-      buckets[status].push(task);
+    visibleTasks.forEach(function (task) {
+      const role = flowTaskRole(task);
+      if (!buckets[role]) buckets[role] = [];
+      buckets[role].push(task);
     });
 
-    const columnWidth = 230;
+    const roleOrder = ["orc", "cnt", "dev", "sec", "ops", "hst", "inc", "mem", "unassigned"];
+    const presentRoles = Object.keys(buckets).sort(function (a, b) {
+      const ai = roleOrder.indexOf(a);
+      const bi = roleOrder.indexOf(b);
+      if (ai !== -1 || bi !== -1) {
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      }
+      return a.localeCompare(b);
+    });
+
+    const columnWidth = 245;
     const rowHeight = 154;
     const nodeWidth = 156;
     const nodeHeight = 86;
     const marginX = 54;
-    const marginY = 88;
+    const marginY = 108;
     const nodes = [];
-    laneColumns.forEach(function (column, statusIndex) {
-      const columnTasks = buckets[column.name] || [];
-      columnTasks.forEach(function (task, taskIndex) {
+    presentRoles.forEach(function (role, roleIndex) {
+      const roleTasks = buckets[role] || [];
+      roleTasks.forEach(function (task, taskIndex) {
+        const id = task.id || `${selectedName}-${role}-${taskIndex}`;
+        const saved = layout && layout[id];
+        const savedX = saved && typeof saved.x === "number" ? saved.x : null;
+        const savedY = saved && typeof saved.y === "number" ? saved.y : null;
         nodes.push({
-          id: task.id || `${column.name}-${taskIndex}`,
+          id,
           task,
-          status: task._flowStatus || column.name,
-          column,
-          x: marginX + statusIndex * columnWidth,
-          y: marginY + taskIndex * rowHeight,
+          status: task._flowStatus || selectedName,
+          role,
+          x: savedX === null ? marginX + roleIndex * columnWidth : savedX,
+          y: savedY === null ? marginY + taskIndex * rowHeight : savedY,
           width: nodeWidth,
           height: nodeHeight,
         });
       });
     });
 
-    const byStatus = {};
+    const byId = {};
     nodes.forEach(function (node) {
-      if (!byStatus[node.status]) byStatus[node.status] = [];
-      byStatus[node.status].push(node);
+      byId[node.id] = node;
     });
 
     const connections = [];
     nodes.forEach(function (node) {
-      const startIndex = columnIndexByName[node.status];
-      if (typeof startIndex !== "number") return;
-      for (let index = startIndex + 1; index < laneColumns.length; index += 1) {
-        const candidates = byStatus[laneColumns[index].name] || [];
-        if (!candidates.length) continue;
-        const sameAssignee = candidates.find(function (candidate) {
-          return (candidate.task.assignee || "") === (node.task.assignee || "");
-        });
-        connections.push({
-          from: node,
-          to: sameAssignee || candidates[0],
-          tone: flowStatusMeta(node.status).tone,
-        });
-        break;
-      }
+      const childIds = (node.task && node.task.children) || (node.task && node.task.child_ids) || [];
+      childIds.forEach(function (childId) {
+        const target = byId[childId];
+        if (target) {
+          connections.push({ from: node, to: target, tone: flowStatusMeta(node.status).tone });
+        }
+      });
+    });
+    if (!connections.length && nodes.length > 1) {
+      nodes.slice().sort(function (a, b) {
+        const ap = Number(a.task.priority || 0);
+        const bp = Number(b.task.priority || 0);
+        if (bp !== ap) return bp - ap;
+        return String(a.id).localeCompare(String(b.id));
+      }).forEach(function (node, index, ordered) {
+        if (index < ordered.length - 1) {
+          connections.push({
+            from: node,
+            to: ordered[index + 1],
+            tone: flowStatusMeta(node.status).tone,
+          });
+        }
+      });
+    }
+
+    let maxRight = 0;
+    let maxBottom = 0;
+    nodes.forEach(function (node) {
+      maxRight = Math.max(maxRight, node.x + node.width);
+      maxBottom = Math.max(maxBottom, node.y + node.height);
     });
 
-    const maxRows = laneColumns.reduce(function (max, column) {
-      return Math.max(max, ((buckets[column.name] || []).length));
+    const lanes = presentRoles.map(function (role, index) {
+      return {
+        key: role,
+        label: flowRoleMeta({ assignee: role }).label,
+        tone: flowRoleMeta({ assignee: role }).tone,
+        x: marginX + index * columnWidth,
+      };
+    });
+
+    const maxRows = presentRoles.reduce(function (max, role) {
+      return Math.max(max, ((buckets[role] || []).length));
     }, 1);
+    const fallbackWidth = marginX * 2 + Math.max(presentRoles.length, 1) * columnWidth;
+    const fallbackHeight = marginY * 2 + maxRows * rowHeight;
     return {
       nodes,
       connections,
-      lanes: laneColumns,
-      canvasWidth: Math.max(1080, marginX * 2 + Math.max(laneColumns.length, 1) * columnWidth),
-      canvasHeight: Math.max(520, marginY * 2 + maxRows * rowHeight),
-      truncated: flattenFlowTasks(board).length > allTasks.length,
+      lanes,
+      selectedStatus: selectedName,
+      selectedCount: visibleTasks.length,
+      canvasWidth: Math.max(1080, fallbackWidth, maxRight + marginX),
+      canvasHeight: Math.max(520, fallbackHeight, maxBottom + marginY),
+      truncated: allBoardTasks.filter(function (task) {
+        return (task._flowStatus || "unknown") === selectedName;
+      }).length > visibleTasks.length,
       nodeWidth,
       nodeHeight,
     };
+  }
+
+  function flowWirePath(from, to) {
+    const fromCenterX = from.x + from.width / 2;
+    const toCenterX = to.x + to.width / 2;
+    const fromRight = from.x + from.width;
+    const toLeft = to.x;
+    const fromLeft = from.x;
+    const toRight = to.x + to.width;
+    let x1 = fromRight;
+    let x2 = toLeft;
+    if (toCenterX < fromCenterX) {
+      x1 = fromLeft;
+      x2 = toRight;
+    }
+    const y1 = from.y + from.height / 2;
+    const y2 = to.y + to.height / 2;
+    const distance = Math.abs(x2 - x1);
+    const bend = Math.max(42, distance / 2);
+    const dir = x2 >= x1 ? 1 : -1;
+    return `M ${x1} ${y1} C ${x1 + bend * dir} ${y1}, ${x2 - bend * dir} ${y2}, ${x2} ${y2}`;
+  }
+
+  function eventPointToCanvas(event, wrap, zoom) {
+    const rect = wrap.getBoundingClientRect();
+    return {
+      x: (event.clientX - rect.left + wrap.scrollLeft) / zoom,
+      y: (event.clientY - rect.top + wrap.scrollTop) / zoom,
+    };
+  }
+
+  function selectedFlowStatus(columns, current) {
+    if (columns.some(function (column) { return column.name === current; })) return current;
+    if (columns.some(function (column) { return column.name === "running"; })) return "running";
+    return (columns[0] && columns[0].name) || "running";
+  }
+
+  function taskCountForStatus(columns, status) {
+    const column = columns.find(function (item) { return item.name === status; });
+    return column && column.tasks ? column.tasks.length : 0;
+  }
+
+  function FlowNode(props) {
+    const task = props.node.task;
+    const role = flowRoleMeta(task);
+    const statusMeta = flowStatusMeta(props.node.status);
+    const dragRef = useRef(null);
+    const movedRef = useRef(false);
+    const handlePointerDown = function (event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      const wrap = props.canvasWrapRef.current;
+      if (!wrap) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const start = eventPointToCanvas(event, wrap, props.zoomRef.current || 1);
+      dragRef.current = {
+        pointerId: event.pointerId,
+        offsetX: start.x - props.node.x,
+        offsetY: start.y - props.node.y,
+      };
+      movedRef.current = false;
+      if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
+      props.onDragState(true);
+    };
+    const handlePointerMove = function (event) {
+      const drag = dragRef.current;
+      const wrap = props.canvasWrapRef.current;
+      if (!drag || !wrap) return;
+      event.preventDefault();
+      const point = eventPointToCanvas(event, wrap, props.zoomRef.current || 1);
+      const nextX = Math.max(12, point.x - drag.offsetX);
+      const nextY = Math.max(48, point.y - drag.offsetY);
+      if (Math.abs(nextX - props.node.x) > 2 || Math.abs(nextY - props.node.y) > 2) movedRef.current = true;
+      props.onMove(props.node.id, nextX, nextY);
+    };
+    const handlePointerUp = function (event) {
+      const drag = dragRef.current;
+      if (drag && event.currentTarget.releasePointerCapture) {
+        try { event.currentTarget.releasePointerCapture(drag.pointerId); } catch (_e) { /* noop */ }
+      }
+      dragRef.current = null;
+      window.setTimeout(function () { movedRef.current = false; }, 0);
+      props.onDragState(false);
+    };
+    return h("button", {
+      key: props.node.id,
+      type: "button",
+      className: cn(
+        "hermes-kanban-flow-node",
+        props.dragging ? "hermes-kanban-flow-node--dragging" : "",
+        `hermes-kanban-flow-node--${flowClassName(statusMeta.tone)}`,
+        `hermes-kanban-flow-role--${flowClassName(role.tone)}`,
+      ),
+      style: {
+        left: `${props.node.x}px`,
+        top: `${props.node.y}px`,
+        width: `${props.node.width}px`,
+        height: `${props.node.height}px`,
+      },
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: handlePointerUp,
+      onPointerCancel: handlePointerUp,
+      onClick: function () {
+        if (!movedRef.current) props.onOpen(task.id);
+      },
+      title: `${task.title || task.id}\nDrag to move. Click to open task.`,
+    },
+      h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--in" }),
+      h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--out" }),
+      h("span", { className: "hermes-kanban-flow-node-icon" }, role.icon),
+      h("span", { className: "hermes-kanban-flow-node-text" },
+        h("strong", null, task.title || task.id),
+        h("span", null, `${role.label} - ${statusMeta.label}`),
+      ),
+    );
   }
 
   function WorkflowFlowView(props) {
@@ -3005,16 +3191,37 @@
     const canvasWrapRef = useRef(null);
     const [zoom, setZoom] = useState(1);
     const zoomRef = useRef(1);
+    const [draggingNodeId, setDraggingNodeId] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState("running");
     const columns = (board && Array.isArray(board.columns)) ? board.columns : [];
-    const flow = useMemo(function () { return buildFlowNodes(board); }, [board]);
+    const safeSelectedStatus = selectedFlowStatus(columns, selectedStatus);
+    const layoutKey = flowLayoutStorageKey(props.boardSlug || (props.boardMeta && props.boardMeta.slug) || "default", safeSelectedStatus);
+    const [nodeLayout, setNodeLayout] = useState(function () { return readFlowLayout(layoutKey); });
+    useEffect(function () {
+      setNodeLayout(readFlowLayout(layoutKey));
+    }, [layoutKey]);
+    useEffect(function () {
+      if (safeSelectedStatus !== selectedStatus) setSelectedStatus(safeSelectedStatus);
+    }, [safeSelectedStatus, selectedStatus]);
+    const flow = useMemo(function () {
+      return buildFlowNodes(board, safeSelectedStatus, nodeLayout);
+    }, [board, safeSelectedStatus, nodeLayout]);
     const totalTasks = columns.reduce(function (sum, column) {
       return sum + ((column.tasks && column.tasks.length) || 0);
     }, 0);
-    const activeColumn = columns.find(function (column) {
-      return column.name === "running" && column.tasks && column.tasks.length;
-    }) || columns.find(function (column) {
-      return column.tasks && column.tasks.length;
-    }) || null;
+    const selectedStatusMeta = flowStatusMeta(safeSelectedStatus);
+    const moveNode = useCallback(function (nodeId, x, y) {
+      setNodeLayout(function (current) {
+        const next = Object.assign({}, current, {});
+        next[nodeId] = { x: Math.round(x), y: Math.round(y) };
+        writeFlowLayout(layoutKey, next);
+        return next;
+      });
+    }, [layoutKey]);
+    const resetLayout = useCallback(function () {
+      setNodeLayout({});
+      writeFlowLayout(layoutKey, {});
+    }, [layoutKey]);
     const applyZoom = useCallback(function (nextZoom, anchor) {
       const wrap = canvasWrapRef.current;
       const previousZoom = zoomRef.current || 1;
@@ -3048,7 +3255,7 @@
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 120 : 1;
-      const nextZoom = zoomRef.current * Math.exp(-event.deltaY * unit * 0.0025);
+      const nextZoom = zoomRef.current * Math.exp(-event.deltaY * unit * 0.003);
       applyZoom(nextZoom, { x: event.clientX, y: event.clientY });
     }, [applyZoom]);
     useEffect(function () {
@@ -3058,16 +3265,17 @@
       return function () { wrap.removeEventListener("wheel", handleFlowWheel); };
     }, [handleFlowWheel]);
     const zoomPercent = Math.round(zoom * 100);
+    const selectedCount = taskCountForStatus(columns, safeSelectedStatus);
 
     return h("div", { className: "hermes-kanban-flow" },
       h("aside", { className: "hermes-kanban-flow-rail" },
         h("div", { className: "hermes-kanban-flow-rail-title" }, "Kanban Flow"),
         h("div", { className: "hermes-kanban-flow-rail-subtitle" },
-          `${totalTasks} visible task${totalTasks === 1 ? "" : "s"}`),
+          `${selectedStatusMeta.label} - ${selectedCount} of ${totalTasks} task${totalTasks === 1 ? "" : "s"}`),
         columns.map(function (column) {
           const meta = flowStatusMeta(column.name);
           const count = (column.tasks && column.tasks.length) || 0;
-          const active = activeColumn && activeColumn.name === column.name;
+          const active = safeSelectedStatus === column.name;
           return h("button", {
             key: column.name,
             type: "button",
@@ -3076,12 +3284,12 @@
               active ? "hermes-kanban-flow-rail-item--active" : "",
               `hermes-kanban-flow-rail-item--${flowClassName(meta.tone)}`,
             ),
-            onClick: props.onRefresh,
-            title: "Refresh the board and flow state.",
+            onClick: function () { setSelectedStatus(column.name); },
+            title: `Show ${meta.label} tasks in the workflow canvas.`,
           },
             h("span", { className: "hermes-kanban-flow-rail-copy" },
               h("strong", null, meta.label),
-              h("span", null, count ? `${count} task${count === 1 ? "" : "s"}` : "No active task"),
+              h("span", null, count ? `${count} task${count === 1 ? "" : "s"}` : "No task"),
             ),
             h("span", { className: "hermes-kanban-flow-rail-count" }, count),
           );
@@ -3091,9 +3299,21 @@
         h("div", { className: "hermes-kanban-flow-stage-header" },
           h("div", null,
             h("div", { className: "hermes-kanban-flow-eyebrow" }, "Live board execution"),
-            h("h2", { className: "hermes-kanban-flow-title" }, "Agent workflow"),
+            h("h2", { className: "hermes-kanban-flow-title" }, `${selectedStatusMeta.label} workflow`),
           ),
           h("div", { className: "hermes-kanban-flow-header-actions" },
+            h("button", {
+              type: "button",
+              className: "hermes-kanban-flow-action",
+              onClick: props.onRefresh,
+              title: "Refresh board state",
+            }, "Refresh"),
+            h("button", {
+              type: "button",
+              className: "hermes-kanban-flow-action",
+              onClick: resetLayout,
+              title: "Reset node positions for this status",
+            }, "Reset layout"),
             h("div", { className: "hermes-kanban-flow-zoom", "aria-label": "Flow zoom controls" },
               h("button", {
                 type: "button",
@@ -3127,12 +3347,12 @@
         ),
         h("div", {
           ref: canvasWrapRef,
-          className: "hermes-kanban-flow-canvas-wrap",
-          title: "Pinch on the trackpad to zoom this flow.",
+          className: cn("hermes-kanban-flow-canvas-wrap", draggingNodeId ? "hermes-kanban-flow-canvas-wrap--dragging" : ""),
+          title: "Pinch on the trackpad to zoom. Drag nodes to rearrange this flow.",
         },
-          totalTasks === 0 ? h("div", { className: "hermes-kanban-flow-empty" },
+          selectedCount === 0 ? h("div", { className: "hermes-kanban-flow-empty" },
             h("div", { className: "hermes-kanban-flow-empty-node" }, "AI"),
-            h("div", null, tx(t, "flow.empty", "No visible tasks for this workflow.")),
+            h("div", null, `No ${selectedStatusMeta.label.toLowerCase()} tasks for this workflow.`),
           ) : h("div", {
             className: "hermes-kanban-flow-zoom-space",
             style: {
@@ -3157,58 +3377,34 @@
                 "aria-hidden": "true",
               },
                 flow.connections.map(function (connection, index) {
-                  const x1 = connection.from.x + connection.from.width;
-                  const y1 = connection.from.y + connection.from.height / 2;
-                  const x2 = connection.to.x;
-                  const y2 = connection.to.y + connection.to.height / 2;
-                  const mid = x1 + Math.max(42, (x2 - x1) / 2);
                   return h("path", {
                     key: `${connection.from.id}-${connection.to.id}-${index}`,
                     className: cn(
                       "hermes-kanban-flow-wire",
                       `hermes-kanban-flow-wire--${flowClassName(connection.tone)}`,
                     ),
-                    d: `M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`,
+                    d: flowWirePath(connection.from, connection.to),
                   });
                 }),
               ),
-              flow.lanes.map(function (column, index) {
-                const meta = flowStatusMeta(column.name);
+              flow.lanes.map(function (lane) {
                 return h("div", {
-                  key: `lane-${column.name}`,
-                  className: cn("hermes-kanban-flow-lane-label", `hermes-kanban-flow-lane-label--${flowClassName(meta.tone)}`),
-                  style: { left: `${54 + index * 230}px`, top: "30px" },
-                }, meta.label);
+                  key: `lane-${lane.key}`,
+                  className: cn("hermes-kanban-flow-lane-label", `hermes-kanban-flow-lane-label--${flowClassName(lane.tone)}`),
+                  style: { left: `${lane.x}px`, top: "30px" },
+                }, lane.label);
               }),
               flow.nodes.map(function (node) {
-                const task = node.task;
-                const role = flowRoleMeta(task);
-                const statusMeta = flowStatusMeta(node.status);
-                return h("button", {
+                return h(FlowNode, {
                   key: node.id,
-                  type: "button",
-                  className: cn(
-                    "hermes-kanban-flow-node",
-                    `hermes-kanban-flow-node--${flowClassName(statusMeta.tone)}`,
-                    `hermes-kanban-flow-role--${flowClassName(role.tone)}`,
-                  ),
-                  style: {
-                    left: `${node.x}px`,
-                    top: `${node.y}px`,
-                    width: `${node.width}px`,
-                    height: `${node.height}px`,
-                  },
-                  onClick: function () { props.onOpen(task.id); },
-                  title: task.title || task.id,
-                },
-                  h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--in" }),
-                  h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--out" }),
-                  h("span", { className: "hermes-kanban-flow-node-icon" }, role.icon),
-                  h("span", { className: "hermes-kanban-flow-node-text" },
-                    h("strong", null, task.title || task.id),
-                    h("span", null, `${role.label} - ${statusMeta.label}`),
-                  ),
-                );
+                  node,
+                  zoomRef,
+                  canvasWrapRef,
+                  dragging: draggingNodeId === node.id,
+                  onMove: moveNode,
+                  onOpen: props.onOpen,
+                  onDragState: function (isDragging) { setDraggingNodeId(isDragging ? node.id : null); },
+                });
               }),
               flow.truncated ? h("div", { className: "hermes-kanban-flow-truncated" },
                 "Showing first 42 visible tasks") : null,
