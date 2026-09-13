@@ -2907,6 +2907,14 @@
     return Math.min(2.4, Math.max(0.32, value));
   }
 
+  function clampFlowNodeWidth(value) {
+    return Math.min(360, Math.max(132, value));
+  }
+
+  function clampFlowNodeHeight(value) {
+    return Math.min(190, Math.max(72, value));
+  }
+
   function readFlowLayout(key) {
     if (!key || typeof window === "undefined" || !window.localStorage) return {};
     try {
@@ -2991,6 +2999,8 @@
         const saved = layout && layout[id];
         const savedX = saved && typeof saved.x === "number" ? saved.x : null;
         const savedY = saved && typeof saved.y === "number" ? saved.y : null;
+        const savedWidth = saved && typeof saved.width === "number" ? clampFlowNodeWidth(saved.width) : null;
+        const savedHeight = saved && typeof saved.height === "number" ? clampFlowNodeHeight(saved.height) : null;
         nodes.push({
           id,
           task,
@@ -2998,8 +3008,8 @@
           role,
           x: savedX === null ? marginX + roleIndex * columnWidth : savedX,
           y: savedY === null ? marginY + taskIndex * rowHeight : savedY,
-          width: nodeWidth,
-          height: nodeHeight,
+          width: savedWidth === null ? nodeWidth : savedWidth,
+          height: savedHeight === null ? nodeHeight : savedHeight,
         });
       });
     });
@@ -3118,6 +3128,7 @@
     const role = flowRoleMeta(task);
     const statusMeta = flowStatusMeta(props.node.status);
     const dragRef = useRef(null);
+    const resizeRef = useRef(null);
     const movedRef = useRef(false);
     const handlePointerDown = function (event) {
       if (event.button !== undefined && event.button !== 0) return;
@@ -3135,6 +3146,24 @@
       if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
       props.onDragState(true);
     };
+    const handleResizePointerDown = function (event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      const wrap = props.canvasWrapRef.current;
+      if (!wrap) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const start = eventPointToCanvas(event, wrap, props.zoomRef.current || 1);
+      resizeRef.current = {
+        pointerId: event.pointerId,
+        startX: start.x,
+        startY: start.y,
+        width: props.node.width,
+        height: props.node.height,
+      };
+      movedRef.current = false;
+      if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
+      props.onDragState(true);
+    };
     const handlePointerMove = function (event) {
       const drag = dragRef.current;
       const wrap = props.canvasWrapRef.current;
@@ -3146,12 +3175,35 @@
       if (Math.abs(nextX - props.node.x) > 2 || Math.abs(nextY - props.node.y) > 2) movedRef.current = true;
       props.onMove(props.node.id, nextX, nextY);
     };
+    const handleResizePointerMove = function (event) {
+      const resize = resizeRef.current;
+      const wrap = props.canvasWrapRef.current;
+      if (!resize || !wrap) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const point = eventPointToCanvas(event, wrap, props.zoomRef.current || 1);
+      const nextWidth = clampFlowNodeWidth(resize.width + point.x - resize.startX);
+      const nextHeight = clampFlowNodeHeight(resize.height + point.y - resize.startY);
+      if (Math.abs(nextWidth - props.node.width) > 2 || Math.abs(nextHeight - props.node.height) > 2) movedRef.current = true;
+      props.onResize(props.node.id, nextWidth, nextHeight);
+    };
     const handlePointerUp = function (event) {
       const drag = dragRef.current;
       if (drag && event.currentTarget.releasePointerCapture) {
         try { event.currentTarget.releasePointerCapture(drag.pointerId); } catch (_e) { /* noop */ }
       }
       dragRef.current = null;
+      window.setTimeout(function () { movedRef.current = false; }, 0);
+      props.onDragState(false);
+    };
+    const handleResizePointerUp = function (event) {
+      const resize = resizeRef.current;
+      if (resize && event.currentTarget.releasePointerCapture) {
+        try { event.currentTarget.releasePointerCapture(resize.pointerId); } catch (_e) { /* noop */ }
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      resizeRef.current = null;
       window.setTimeout(function () { movedRef.current = false; }, 0);
       props.onDragState(false);
     };
@@ -3177,7 +3229,7 @@
       onClick: function () {
         if (!movedRef.current) props.onOpen(task.id);
       },
-      title: `${task.title || task.id}\nDrag to move. Click to open task.`,
+      title: `${task.title || task.id}\nDrag to move. Use the bottom-right handle to resize. Click to open task.`,
     },
       h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--in" }),
       h("span", { className: "hermes-kanban-flow-handle hermes-kanban-flow-handle--out" }),
@@ -3186,6 +3238,15 @@
         h("strong", null, task.title || task.id),
         h("span", null, `${role.label} - ${statusMeta.label}`),
       ),
+      h("span", {
+        className: "hermes-kanban-flow-resize",
+        onPointerDown: handleResizePointerDown,
+        onPointerMove: handleResizePointerMove,
+        onPointerUp: handleResizePointerUp,
+        onPointerCancel: handleResizePointerUp,
+        title: "Resize node",
+        "aria-hidden": "true",
+      }),
     );
   }
 
@@ -3217,7 +3278,18 @@
     const moveNode = useCallback(function (nodeId, x, y) {
       setNodeLayout(function (current) {
         const next = Object.assign({}, current, {});
-        next[nodeId] = { x: Math.round(x), y: Math.round(y) };
+        next[nodeId] = Object.assign({}, next[nodeId] || {}, { x: Math.round(x), y: Math.round(y) });
+        writeFlowLayout(layoutKey, next);
+        return next;
+      });
+    }, [layoutKey]);
+    const resizeNode = useCallback(function (nodeId, width, height) {
+      setNodeLayout(function (current) {
+        const next = Object.assign({}, current, {});
+        next[nodeId] = Object.assign({}, next[nodeId] || {}, {
+          width: Math.round(clampFlowNodeWidth(width)),
+          height: Math.round(clampFlowNodeHeight(height)),
+        });
         writeFlowLayout(layoutKey, next);
         return next;
       });
@@ -3406,6 +3478,7 @@
                   canvasWrapRef,
                   dragging: draggingNodeId === node.id,
                   onMove: moveNode,
+                  onResize: resizeNode,
                   onOpen: props.onOpen,
                   onDragState: function (isDragging) { setDraggingNodeId(isDragging ? node.id : null); },
                 });
