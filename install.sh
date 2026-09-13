@@ -166,6 +166,24 @@ TIMER
   log "Installed auto-sync timer: hermes-ui-customizations-sync.timer"
 }
 
+install_recovery_commands() {
+  install -d /usr/local/bin
+
+  if [[ -f scripts/restore-hermes-ui-customizations.sh ]]; then
+    install -m 0755 scripts/restore-hermes-ui-customizations.sh /usr/local/bin/hermes-ui-restore
+    log "Installed command: hermes-ui-restore"
+  else
+    warn "Restore script missing; hermes-ui-restore command not installed"
+  fi
+
+  if [[ -f scripts/backup-hermes-ui-customizations.sh ]]; then
+    install -m 0755 scripts/backup-hermes-ui-customizations.sh /usr/local/bin/hermes-ui-backup
+    log "Installed command: hermes-ui-backup"
+  else
+    warn "Backup script missing; hermes-ui-backup command not installed"
+  fi
+}
+
 restart_hermes_dashboard() {
   XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/0}" systemctl --user restart hermes-dashboard.service >/dev/null 2>&1 || true
   XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/0}" systemctl --user restart hermes-gateway.service >/dev/null 2>&1 || true
@@ -180,6 +198,7 @@ main() {
   install_kanban_workflow
   install_preview_lab
   install_auto_sync
+  install_recovery_commands
   restart_hermes_dashboard
 
   cat <<SUMMARY
@@ -191,6 +210,9 @@ Theme:
 
 Manual update:
   ${INSTALL_ROOT}/sync.sh
+
+After updating Hermes:
+  hermes-ui-restore
 
 SUMMARY
 }

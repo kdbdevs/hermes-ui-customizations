@@ -11,6 +11,30 @@ This repository intentionally backs up only allowlisted UI assets:
 
 Do not add Hermes runtime config, API keys, environment files, databases, logs, session data, or memory vault contents here.
 
+## Protect Custom UI Before Updating Hermes
+
+Hermes updates can replace bundled dashboard files. If that happens, the custom
+theme and Kanban Flow UI can disappear from the live dashboard, even though the
+backup repository is still safe.
+
+Run this before updating Hermes:
+
+```bash
+sudo -i
+hermes-ui-backup
+```
+
+Run this after updating Hermes:
+
+```bash
+sudo -i
+hermes-ui-restore
+```
+
+The restore command pulls the latest repo version, saves a timestamped snapshot
+of the active Hermes dashboard files into `/root/hermes-backups`, reinstalls the
+custom theme and Kanban Flow files, then restarts the Hermes dashboard.
+
 ## Install on Another Hermes VPS
 
 Because this repository is private, give the friend's VPS read-only access with
@@ -48,7 +72,7 @@ Manual update:
 Run on the Hermes VPS:
 
 ```bash
-/root/hermes-ui-customizations/scripts/restore-hermes-ui-customizations.sh
+hermes-ui-restore
 ```
 
 The restore script copies the backed-up theme and Kanban dashboard files into place, then restarts the Hermes dashboard service.
