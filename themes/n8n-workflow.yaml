@@ -1,18 +1,18 @@
 name: n8n-workflow
 label: n8n Workflow
-description: n8n-inspired dark workflow canvas with soft violet nodes and coral execution accents
+description: n8n-inspired dark dashboard with restrained orange accents and workflow canvas styling
 palette:
   background:
-    hex: "#0b0713"
+    hex: "#181818"
     alpha: 1
   midground:
-    hex: "#f6f2ff"
+    hex: "#f4f4f5"
     alpha: 1
   foreground:
-    hex: "#ff6d5a"
-    alpha: 0.28
-  warmGlow: "rgba(255, 93, 58, 0.42)"
-  noiseOpacity: 0.75
+    hex: "#ff6d00"
+    alpha: 0.14
+  warmGlow: "rgba(255, 109, 0, 0.16)"
+  noiseOpacity: 0.28
 typography:
   fontSans: '"Inter", "Geist", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
   fontMono: '"JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace'
@@ -26,68 +26,68 @@ layout:
   density: comfortable
 layoutVariant: tiled
 swatchColors:
-  - "#0b0713"
-  - "#f6f2ff"
-  - "#ff6d5a"
-terminalBackground: "#090511"
-terminalForeground: "#f6f2ff"
+  - "#181818"
+  - "#f4f4f5"
+  - "#ff6d00"
+terminalBackground: "#111111"
+terminalForeground: "#f4f4f5"
 seriesColors:
-  inputTokenAccent: "#ff6d5a"
-  outputTokenAccent: "#31c96f"
+  inputTokenAccent: "#ff6d00"
+  outputTokenAccent: "#00c853"
 colorOverrides:
-  card: "#171320"
-  cardForeground: "#f7f2ff"
-  popover: "#100c18"
-  popoverForeground: "#f7f2ff"
-  primary: "#ff6d5a"
-  primaryForeground: "#160b0a"
-  secondary: "#272233"
-  secondaryForeground: "#f7f2ff"
-  muted: "#211c2c"
-  mutedForeground: "#a9a2b7"
-  accent: "#2d2739"
-  accentForeground: "#fff7f1"
+  card: "#242424"
+  cardForeground: "#f4f4f5"
+  popover: "#242424"
+  popoverForeground: "#f4f4f5"
+  primary: "#ff6d00"
+  primaryForeground: "#1a1008"
+  secondary: "#2b2b2b"
+  secondaryForeground: "#f4f4f5"
+  muted: "#2a2a2a"
+  mutedForeground: "#a3a3a3"
+  accent: "#333333"
+  accentForeground: "#ffffff"
   destructive: "#ff4e61"
-  destructiveForeground: "#fff7f1"
-  success: "#31c96f"
+  destructiveForeground: "#ffffff"
+  success: "#00c853"
   warning: "#ffb84d"
-  border: "#3b3548"
-  input: "#2d2739"
-  ring: "#ff6d5a"
+  border: "#343434"
+  input: "#343434"
+  ring: "#ff6d00"
 componentStyles:
   card:
-    background: "linear-gradient(180deg, rgba(35,30,46,0.96), rgba(23,19,32,0.96))"
-    borderColor: "rgba(154,147,171,0.28)"
-    boxShadow: "0 18px 46px rgba(0,0,0,0.28)"
+    background: "rgba(36,36,36,0.96)"
+    borderColor: "rgba(255,255,255,0.12)"
+    boxShadow: "0 12px 34px rgba(0,0,0,0.22)"
   sidebar:
-    background: "rgba(12,8,18,0.96)"
-    borderColor: "rgba(154,147,171,0.26)"
+    background: "rgba(38,38,38,0.98)"
+    borderColor: "rgba(255,255,255,0.1)"
   header:
-    background: "rgba(12,8,18,0.94)"
-    borderColor: "rgba(154,147,171,0.24)"
+    background: "rgba(24,24,24,0.96)"
+    borderColor: "rgba(255,255,255,0.1)"
 customCSS: |
   :root {
-    --n8n-bg: #0b0713;
-    --n8n-panel: #171320;
-    --n8n-panel-2: #211c2c;
-    --n8n-node: #2b2634;
-    --n8n-border: rgba(154, 147, 171, 0.34);
-    --n8n-border-strong: rgba(181, 174, 196, 0.66);
-    --n8n-text: #f7f2ff;
-    --n8n-muted: #a9a2b7;
-    --n8n-faint: #746d82;
-    --n8n-coral: #ff6d5a;
-    --n8n-coral-strong: #ff5639;
-    --n8n-green: #31c96f;
-    --n8n-blue: #65c7ff;
-    --n8n-purple: #7a68ff;
+    --n8n-bg: #181818;
+    --n8n-sidebar: #262626;
+    --n8n-panel: #242424;
+    --n8n-panel-2: #2b2b2b;
+    --n8n-node: #2d2d2d;
+    --n8n-border: rgba(255, 255, 255, 0.12);
+    --n8n-border-strong: rgba(255, 255, 255, 0.24);
+    --n8n-text: #f4f4f5;
+    --n8n-muted: #a3a3a3;
+    --n8n-faint: #747474;
+    --n8n-orange: #ff6d00;
+    --n8n-orange-hover: #ff7a1a;
+    --n8n-coral: #ff6d00;
+    --n8n-coral-strong: #ff6d00;
+    --n8n-green: #00c853;
+    --n8n-blue: #6aa9ff;
+    --n8n-purple: #a77cff;
   }
 
   html, body, #root {
-    background:
-      radial-gradient(circle at 18% 10%, rgba(255, 109, 90, 0.09), transparent 28rem),
-      radial-gradient(circle at 78% 0%, rgba(122, 104, 255, 0.08), transparent 30rem),
-      var(--n8n-bg) !important;
+    background: var(--n8n-bg) !important;
     color: var(--n8n-text);
     font-family: var(--theme-font-sans);
     letter-spacing: 0;
@@ -98,31 +98,31 @@ customCSS: |
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-image: radial-gradient(circle, rgba(144, 132, 166, 0.16) 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
     background-size: 22px 22px;
-    opacity: 0.52;
+    opacity: 0.2;
     pointer-events: none;
   }
 
   #app-sidebar,
   [id="app-sidebar"] {
-    background: rgba(10, 7, 15, 0.96) !important;
+    background: var(--n8n-sidebar) !important;
     border-color: var(--n8n-border) !important;
-    box-shadow: 18px 0 44px rgba(0, 0, 0, 0.22);
+    box-shadow: 1px 0 0 rgba(255, 255, 255, 0.04);
   }
 
   #app-sidebar a,
   #app-sidebar button,
   #app-sidebar [role="button"] {
     border-radius: 8px !important;
-    color: rgba(247, 242, 255, 0.72) !important;
+    color: rgba(244, 244, 245, 0.74) !important;
     transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
   }
 
   #app-sidebar a:hover,
   #app-sidebar button:hover,
   #app-sidebar [role="button"]:hover {
-    background: rgba(255, 255, 255, 0.055) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: var(--n8n-text) !important;
   }
 
@@ -150,7 +150,7 @@ customCSS: |
   select,
   [role="combobox"] {
     border-color: var(--n8n-border) !important;
-    background: rgba(14, 10, 22, 0.82) !important;
+    background: #181818 !important;
     color: var(--n8n-text) !important;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
   }
@@ -159,8 +159,8 @@ customCSS: |
   textarea:focus,
   select:focus,
   [role="combobox"]:focus {
-    border-color: rgba(255, 109, 90, 0.72) !important;
-    box-shadow: 0 0 0 3px rgba(255, 109, 90, 0.16) !important;
+    border-color: var(--n8n-orange) !important;
+    box-shadow: 0 0 0 2px rgba(255, 109, 0, 0.18) !important;
   }
 
   button:not([role="tab"]),
@@ -182,15 +182,15 @@ customCSS: |
   [role="menu"],
   [role="listbox"] {
     border-color: var(--n8n-border) !important;
-    background: rgba(12, 8, 18, 0.94) !important;
+    background: #242424 !important;
     color: var(--n8n-text) !important;
-    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.48) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42) !important;
     backdrop-filter: blur(14px);
   }
 
   [role="option"]:hover,
   [role="menuitem"]:hover {
-    background: rgba(255, 109, 90, 0.12) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
   }
 
   .hermes-kanban {
@@ -207,72 +207,70 @@ customCSS: |
   }
 
   .hermes-kanban-column {
-    border-color: rgba(154, 147, 171, 0.3) !important;
-    background: rgba(17, 13, 25, 0.86) !important;
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+    border-color: var(--n8n-border) !important;
+    background: #202020 !important;
+    box-shadow: none;
   }
 
   .hermes-kanban-card {
-    border-color: rgba(154, 147, 171, 0.32) !important;
-    background: linear-gradient(180deg, rgba(43, 38, 52, 0.96), rgba(31, 26, 40, 0.96)) !important;
+    border-color: var(--n8n-border) !important;
+    background: #242424 !important;
     color: var(--n8n-text) !important;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    box-shadow: none;
     transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
   }
 
   .hermes-kanban-card:hover {
     border-color: var(--n8n-border-strong) !important;
     transform: translateY(-1px);
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
   }
 
   .hermes-kanban-view-toggle {
-    border-color: rgba(154, 147, 171, 0.35) !important;
-    background: rgba(12, 8, 18, 0.7) !important;
+    border-color: var(--n8n-border) !important;
+    background: #181818 !important;
   }
 
   .hermes-kanban-view-toggle-btn--active {
-    background: var(--n8n-coral) !important;
+    background: var(--n8n-orange) !important;
     color: #1a0b08 !important;
-    box-shadow: 0 0 0 1px rgba(255,109,90,0.35), 0 0 24px rgba(255,109,90,0.28) !important;
+    box-shadow: none !important;
   }
 
   .hermes-kanban-flow {
-    border-color: rgba(154, 147, 171, 0.3) !important;
-    background:
-      radial-gradient(circle at 12% 18%, rgba(255, 109, 90, 0.13), transparent 28rem),
-      linear-gradient(180deg, #120b1e 0%, #090511 100%) !important;
+    border-color: var(--n8n-border) !important;
+    background: #181818 !important;
   }
 
   .hermes-kanban-flow-rail {
-    background: linear-gradient(180deg, rgba(36, 30, 48, 0.88), rgba(13, 8, 21, 0.72)) !important;
-    border-right-color: rgba(154, 147, 171, 0.28) !important;
+    background: #242424 !important;
+    border-right-color: var(--n8n-border) !important;
   }
 
   .hermes-kanban-flow-node {
-    border-color: rgba(181, 174, 196, 0.75) !important;
-    background: linear-gradient(180deg, rgba(49, 44, 59, 0.98), rgba(35, 30, 43, 0.98)) !important;
-    box-shadow: 0 15px 36px rgba(0, 0, 0, 0.36) !important;
+    border-color: var(--n8n-border-strong) !important;
+    background: #2d2d2d !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24) !important;
   }
 
   .hermes-kanban-flow-node--running {
-    border-color: var(--n8n-coral) !important;
-    box-shadow: 0 0 0 1px rgba(255, 109, 90, 0.34), 0 0 34px rgba(255, 109, 90, 0.26) !important;
+    border-color: var(--n8n-orange) !important;
+    box-shadow: 0 0 0 1px rgba(255, 109, 0, 0.28), 0 8px 22px rgba(0, 0, 0, 0.24) !important;
   }
 
   html[data-layout-variant="tiled"] {
-    --color-card: rgba(23, 19, 32, 0.94);
+    --color-card: #242424;
     --color-card-foreground: var(--n8n-text);
-    --color-popover: rgba(14, 10, 22, 0.96);
+    --color-popover: #242424;
     --color-popover-foreground: var(--n8n-text);
-    --color-secondary: rgba(39, 34, 51, 0.94);
-    --color-muted: rgba(33, 28, 44, 0.88);
+    --color-secondary: #2b2b2b;
+    --color-muted: #2a2a2a;
     --color-muted-foreground: var(--n8n-muted);
-    --color-accent: rgba(255, 109, 90, 0.12);
+    --color-accent: #333333;
     --color-accent-foreground: var(--n8n-text);
     --color-border: var(--n8n-border);
-    --color-input: rgba(154, 147, 171, 0.28);
-    --color-ring: var(--n8n-coral);
+    --color-input: #343434;
+    --color-ring: var(--n8n-orange);
     color-scheme: dark;
   }
 
@@ -291,7 +289,7 @@ customCSS: |
   }
 
   html[data-layout-variant="tiled"] ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 109, 90, 0.5);
+    background: rgba(255, 109, 0, 0.55);
   }
 
   html[data-layout-variant="tiled"] .bg-background,
@@ -308,7 +306,7 @@ customCSS: |
   html[data-layout-variant="tiled"] [class*="bg-card"],
   html[data-layout-variant="tiled"] [class*="bg-secondary"],
   html[data-layout-variant="tiled"] [class*="bg-muted"] {
-    background: linear-gradient(180deg, rgba(35, 30, 46, 0.94), rgba(19, 15, 28, 0.94)) !important;
+    background: #242424 !important;
   }
 
   html[data-layout-variant="tiled"] .border,
@@ -336,21 +334,21 @@ customCSS: |
   }
 
   html[data-layout-variant="tiled"] a:not(#app-sidebar a) {
-    color: #d7ceff;
-    text-decoration-color: rgba(255, 109, 90, 0.38);
+    color: #f4f4f5;
+    text-decoration-color: rgba(255, 109, 0, 0.36);
     transition: color 140ms ease, text-decoration-color 140ms ease;
   }
 
   html[data-layout-variant="tiled"] a:not(#app-sidebar a):hover {
-    color: #fff7f1;
-    text-decoration-color: var(--n8n-coral);
+    color: #ffffff;
+    text-decoration-color: var(--n8n-orange);
   }
 
   html[data-layout-variant="tiled"] h1,
   html[data-layout-variant="tiled"] h2,
   html[data-layout-variant="tiled"] h3,
   html[data-layout-variant="tiled"] h4 {
-    color: #fff9f5 !important;
+    color: #f4f4f5 !important;
   }
 
   html[data-layout-variant="tiled"] main > div,
@@ -360,8 +358,8 @@ customCSS: |
   }
 
   html[data-layout-variant="tiled"] main [class*="rounded"][class*="border"]:not(.hermes-kanban-flow):not(.hermes-kanban-flow-node):not(.hermes-kanban-card) {
-    background: linear-gradient(180deg, rgba(25, 20, 35, 0.86), rgba(14, 10, 22, 0.86)) !important;
-    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.18);
+    background: #242424 !important;
+    box-shadow: none;
   }
 
   html[data-layout-variant="tiled"] button,
@@ -374,17 +372,88 @@ customCSS: |
   html[data-layout-variant="tiled"] button[class*="bg-midground"],
   html[data-layout-variant="tiled"] button[class*="bg-primary"],
   html[data-layout-variant="tiled"] button[class*="text-background"] {
-    background: linear-gradient(180deg, #ff7a66, #ff5a45) !important;
-    border-color: rgba(255, 109, 90, 0.72) !important;
-    color: #170807 !important;
-    box-shadow: 0 8px 22px rgba(255, 109, 90, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    font-weight: 650;
+    background: #2b2b2b !important;
+    border-color: var(--n8n-border) !important;
+    color: var(--n8n-text) !important;
+    box-shadow: none;
+    font-weight: 600;
   }
 
   html[data-layout-variant="tiled"] button[class*="bg-midground"]:hover,
   html[data-layout-variant="tiled"] button[class*="bg-primary"]:hover,
   html[data-layout-variant="tiled"] button[class*="text-background"]:hover {
-    box-shadow: 0 12px 30px rgba(255, 109, 90, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    background: #333333 !important;
+    border-color: var(--n8n-border-strong) !important;
+    box-shadow: none;
+  }
+
+  html[data-layout-variant="tiled"] button[title^="Create a new board"],
+  html[data-layout-variant="tiled"] button[type="submit"] {
+    background: var(--n8n-orange) !important;
+    border-color: var(--n8n-orange) !important;
+    color: #1a1008 !important;
+    box-shadow: none !important;
+  }
+
+  html[data-layout-variant="tiled"] button[title^="Create a new board"]:hover,
+  html[data-layout-variant="tiled"] button[type="submit"]:hover {
+    background: var(--n8n-orange-hover) !important;
+    border-color: var(--n8n-orange-hover) !important;
+  }
+
+  html[data-layout-variant="tiled"] #app-sidebar button,
+  html[data-layout-variant="tiled"] button[aria-label="Open navigation"],
+  html[data-layout-variant="tiled"] button[aria-label="Close navigation"],
+  html[data-layout-variant="tiled"] button[aria-label="Collapse"],
+  html[data-layout-variant="tiled"] button[aria-label="Switch theme"],
+  html[data-layout-variant="tiled"] button[aria-label="Switch language"],
+  html[data-layout-variant="tiled"] button[title^="Board settings"],
+  html[data-layout-variant="tiled"] button[title^="Reload the board"],
+  html[data-layout-variant="tiled"] button[title^="Clear all active filters"],
+  html[data-layout-variant="tiled"] button[title^="Wake the dispatcher"] {
+    background: transparent !important;
+    border-color: var(--n8n-border) !important;
+    color: rgba(244, 244, 245, 0.74) !important;
+    box-shadow: none !important;
+  }
+
+  html[data-layout-variant="tiled"] button[title^="Board settings"],
+  html[data-layout-variant="tiled"] button[title^="Reload the board"],
+  html[data-layout-variant="tiled"] button[title^="Clear all active filters"],
+  html[data-layout-variant="tiled"] button[title^="Wake the dispatcher"] {
+    background: #2b2b2b !important;
+  }
+
+  html[data-layout-variant="tiled"] #app-sidebar button:hover,
+  html[data-layout-variant="tiled"] button[aria-label="Open navigation"]:hover,
+  html[data-layout-variant="tiled"] button[aria-label="Close navigation"]:hover,
+  html[data-layout-variant="tiled"] button[aria-label="Collapse"]:hover,
+  html[data-layout-variant="tiled"] button[aria-label="Switch theme"]:hover,
+  html[data-layout-variant="tiled"] button[aria-label="Switch language"]:hover,
+  html[data-layout-variant="tiled"] button[title^="Board settings"]:hover,
+  html[data-layout-variant="tiled"] button[title^="Reload the board"]:hover,
+  html[data-layout-variant="tiled"] button[title^="Clear all active filters"]:hover,
+  html[data-layout-variant="tiled"] button[title^="Wake the dispatcher"]:hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: var(--n8n-text) !important;
+  }
+
+  html[data-layout-variant="tiled"] button[role="checkbox"],
+  html[data-layout-variant="tiled"] [role="checkbox"].peer,
+  html[data-layout-variant="tiled"] .hermes-kanban-col-check,
+  html[data-layout-variant="tiled"] .hermes-kanban-card-check {
+    background: #181818 !important;
+    border-color: var(--n8n-border-strong) !important;
+    color: var(--n8n-text) !important;
+    box-shadow: none !important;
+  }
+
+  html[data-layout-variant="tiled"] button[role="checkbox"][data-state="checked"],
+  html[data-layout-variant="tiled"] [role="checkbox"][aria-checked="true"],
+  html[data-layout-variant="tiled"] [role="checkbox"][data-state="checked"] {
+    background: var(--n8n-orange) !important;
+    border-color: var(--n8n-orange) !important;
+    color: #1a1008 !important;
   }
 
   html[data-layout-variant="tiled"] button:not([class*="bg-midground"]):not([class*="bg-primary"]):not(.hermes-kanban-view-toggle-btn--active):hover,
@@ -429,7 +498,7 @@ customCSS: |
 
   html[data-layout-variant="tiled"] tbody tr:hover,
   html[data-layout-variant="tiled"] [role="row"]:hover {
-    background: rgba(255, 109, 90, 0.075) !important;
+    background: rgba(255, 255, 255, 0.055) !important;
   }
 
   html[data-layout-variant="tiled"] code,
@@ -448,9 +517,7 @@ customCSS: |
 
   html[data-layout-variant="tiled"] [data-slot="dialog-content"],
   html[data-layout-variant="tiled"] [role="dialog"] {
-    background:
-      radial-gradient(circle at 0% 0%, rgba(255, 109, 90, 0.1), transparent 18rem),
-      linear-gradient(180deg, rgba(22, 17, 31, 0.98), rgba(10, 7, 15, 0.98)) !important;
+    background: #242424 !important;
   }
 
   html[data-layout-variant="tiled"] [data-slot="dialog-header"],
@@ -466,8 +533,8 @@ customCSS: |
 
   html[data-layout-variant="tiled"] [data-state="checked"],
   html[data-layout-variant="tiled"] [aria-checked="true"] {
-    border-color: rgba(255, 109, 90, 0.56) !important;
-    background-color: rgba(255, 109, 90, 0.16) !important;
+    border-color: rgba(255, 109, 0, 0.58) !important;
+    background-color: rgba(255, 109, 0, 0.08) !important;
   }
 
   html[data-layout-variant="tiled"] [class*="text-success"],
@@ -487,8 +554,8 @@ customCSS: |
 
   html[data-layout-variant="tiled"] [class*="bg-success"],
   html[data-layout-variant="tiled"] [class*="bg-emerald"] {
-    background-color: rgba(49, 201, 111, 0.14) !important;
-    border-color: rgba(49, 201, 111, 0.38) !important;
+    background-color: rgba(0, 200, 83, 0.14) !important;
+    border-color: rgba(0, 200, 83, 0.36) !important;
   }
 
   html[data-layout-variant="tiled"] [class*="bg-warning"],
@@ -506,16 +573,16 @@ customCSS: |
   html[data-layout-variant="tiled"] .xterm,
   html[data-layout-variant="tiled"] .xterm-viewport,
   html[data-layout-variant="tiled"] .xterm-screen {
-    background: #07040d !important;
+    background: #111111 !important;
   }
 
   html[data-layout-variant="tiled"] .hermes-kanban-flow-header {
-    background: linear-gradient(90deg, rgba(18, 11, 30, 0.95), rgba(18, 11, 30, 0.4)) !important;
-    border-color: rgba(154, 147, 171, 0.22) !important;
+    background: #181818 !important;
+    border-color: var(--n8n-border) !important;
   }
 
   html[data-layout-variant="tiled"] .hermes-kanban-flow-toolbar button {
-    background: rgba(12, 8, 18, 0.68) !important;
+    background: #242424 !important;
   }
 
   html[data-layout-variant="tiled"] .hermes-kanban-flow-status-btn {
@@ -524,16 +591,24 @@ customCSS: |
   }
 
   html[data-layout-variant="tiled"] .hermes-kanban-flow-status-btn--active {
-    background: linear-gradient(90deg, rgba(255, 109, 90, 0.28), rgba(255, 255, 255, 0.05)) !important;
-    border-color: rgba(255, 109, 90, 0.38) !important;
+    background: #2b2b2b !important;
+    border-color: rgba(255, 109, 0, 0.48) !important;
+    color: var(--n8n-orange) !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-view-toggle-btn--active {
+    background: #2b2b2b !important;
+    border-color: rgba(255, 109, 0, 0.56) !important;
+    color: var(--n8n-orange) !important;
+    box-shadow: inset 0 -2px 0 var(--n8n-orange) !important;
   }
 
   .hermes-kanban-flow-wire--running {
-    stroke: var(--n8n-coral) !important;
-    filter: drop-shadow(0 0 7px rgba(255, 109, 90, 0.72)) !important;
+    stroke: var(--n8n-orange) !important;
+    filter: none !important;
   }
 
   ::selection {
-    background: rgba(255, 109, 90, 0.34);
+    background: rgba(255, 109, 0, 0.34);
     color: #fff;
   }
