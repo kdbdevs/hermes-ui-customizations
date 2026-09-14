@@ -1,7 +1,7 @@
-generated_at=2026-09-13T17:16:02Z
+generated_at=2026-09-14T17:17:02Z
 host=localhost
-hermes_src=/usr/local/lib/hermes-agent
+hermes_agent_dir=/usr/local/lib/hermes-agent
 hermes_home=/root/.hermes
 theme_count=1
-kanban_index_sha256=6ba0d3c9280b0d40e59a22f5edcce3431770fc800b6b92f51b649155c28e3120
-kanban_style_sha256=42f993a72da8cc53456d6424e16e120c98c43ed046a70a791bef05efd1646f26
+kanban_index_sha256=08521d46be8e478d5c04acb22bd736e1c0a3e8b798db9a819856c790c66d9ad1
+kanban_style_sha256=d9cc50ac9a8cca40b6e131755c58ddc998236a3d3e51d4f4a2fc9adea4dcf315

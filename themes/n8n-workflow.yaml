@@ -362,8 +362,8 @@ customCSS: |
     box-shadow: none;
   }
 
-  html[data-layout-variant="tiled"] button,
-  html[data-layout-variant="tiled"] [role="button"] {
+  html[data-layout-variant="tiled"] button:not([role="checkbox"]):not(.hermes-kanban-column-add),
+  html[data-layout-variant="tiled"] [role="button"]:not(.hermes-kanban-column-add) {
     min-height: 2rem;
     border-color: rgba(154, 147, 171, 0.38) !important;
     color: var(--n8n-text);
@@ -462,11 +462,44 @@ customCSS: |
     border-color: rgba(181, 174, 196, 0.5) !important;
   }
 
-  html[data-layout-variant="tiled"] input,
+  html[data-layout-variant="tiled"] input:not([type="checkbox"]),
   html[data-layout-variant="tiled"] textarea,
   html[data-layout-variant="tiled"] select {
     min-height: 2.25rem;
     border-radius: 8px !important;
+  }
+
+  /* Compact controls keep equal sides instead of inheriting field heights. */
+  html[data-layout-variant="tiled"] [role="checkbox"],
+  html[data-layout-variant="tiled"] input[type="checkbox"] {
+    box-sizing: border-box;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    flex: 0 0 16px !important;
+    aspect-ratio: 1;
+    padding: 0 !important;
+    border-radius: 3px !important;
+  }
+
+  html[data-layout-variant="tiled"] .hermes-kanban-column-add {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    flex: 0 0 28px !important;
+    aspect-ratio: 1;
+    padding: 0 !important;
+    border-radius: 4px !important;
   }
 
   html[data-layout-variant="tiled"] input::placeholder,
