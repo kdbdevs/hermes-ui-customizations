@@ -2855,6 +2855,7 @@
   }
 
   const FLOW_STATUS_META = {
+    all: { label: "All", tone: "all" },
     triage: { label: "Triage", tone: "triage" },
     todo: { label: "Todo", tone: "todo" },
     scheduled: { label: "Scheduled", tone: "scheduled" },
@@ -2864,6 +2865,8 @@
     review: { label: "Review", tone: "review" },
     done: { label: "Done", tone: "done" },
   };
+  const FLOW_ALL_STATUS = "all";
+  const FLOW_ALL_EXCLUDED_STATUSES = { done: true, archived: true };
 
   const FLOW_ROLE_META = {
     orc: { label: "ORC", icon: "AI", tone: "orch" },
@@ -2957,26 +2960,40 @@
 
   function buildFlowNodes(board, selectedStatus, layout) {
     const columns = (board && Array.isArray(board.columns)) ? board.columns : [];
+    const isAllFlow = selectedStatus === FLOW_ALL_STATUS;
     const selectedColumn = columns.find(function (column) {
       return column.name === selectedStatus;
     }) || columns.find(function (column) {
       return column.name === "running";
     }) || columns[0] || null;
-    const selectedName = (selectedColumn && selectedColumn.name) || selectedStatus || "running";
+    const selectedName = isAllFlow ? FLOW_ALL_STATUS : ((selectedColumn && selectedColumn.name) || selectedStatus || "running");
     const allBoardTasks = flattenFlowTasks(board);
     const visibleTasks = allBoardTasks.filter(function (task) {
-      return (task._flowStatus || "unknown") === selectedName;
-    }).slice(0, 42);
+      const taskStatus = task._flowStatus || "unknown";
+      if (isAllFlow) return !FLOW_ALL_EXCLUDED_STATUSES[taskStatus];
+      return taskStatus === selectedName;
+    }).slice(0, isAllFlow ? 120 : 42);
 
     const buckets = {};
     visibleTasks.forEach(function (task) {
-      const role = flowTaskRole(task);
-      if (!buckets[role]) buckets[role] = [];
-      buckets[role].push(task);
+      const bucket = isAllFlow ? (task._flowStatus || "unknown") : flowTaskRole(task);
+      if (!buckets[bucket]) buckets[bucket] = [];
+      buckets[bucket].push(task);
     });
 
     const roleOrder = ["orc", "cnt", "dev", "sec", "ops", "hst", "inc", "mem", "unassigned"];
+    const statusOrder = COLUMN_ORDER.filter(function (status) {
+      return !FLOW_ALL_EXCLUDED_STATUSES[status];
+    });
     const presentRoles = Object.keys(buckets).sort(function (a, b) {
+      if (isAllFlow) {
+        const ai = statusOrder.indexOf(a);
+        const bi = statusOrder.indexOf(b);
+        if (ai !== -1 || bi !== -1) {
+          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        }
+        return a.localeCompare(b);
+      }
       const ai = roleOrder.indexOf(a);
       const bi = roleOrder.indexOf(b);
       if (ai !== -1 || bi !== -1) {
@@ -2995,6 +3012,7 @@
     presentRoles.forEach(function (role, roleIndex) {
       const roleTasks = buckets[role] || [];
       roleTasks.forEach(function (task, taskIndex) {
+        const taskStatus = task._flowStatus || selectedName;
         const id = task.id || `${selectedName}-${role}-${taskIndex}`;
         const saved = layout && layout[id];
         const savedX = saved && typeof saved.x === "number" ? saved.x : null;
@@ -3004,7 +3022,7 @@
         nodes.push({
           id,
           task,
-          status: task._flowStatus || selectedName,
+          status: taskStatus,
           role,
           x: savedX === null ? marginX + roleIndex * columnWidth : savedX,
           y: savedY === null ? marginY + taskIndex * rowHeight : savedY,
@@ -3025,12 +3043,51 @@
       childIds.forEach(function (childId) {
         const target = byId[childId];
         if (target) {
-          connections.push({ from: node, to: target, tone: flowStatusMeta(node.status).tone });
+          connections.push({
+            from: node,
+            to: target,
+            tone: node.status === "running" || target.status === "running" ? "running" : flowStatusMeta(node.status).tone,
+          });
         }
       });
     });
+    if (isAllFlow && nodes.length > 1) {
+      const existingPairs = {};
+      connections.forEach(function (connection) {
+        existingPairs[connection.from.id + "->" + connection.to.id] = true;
+      });
+      nodes.slice().sort(function (a, b) {
+        const ac = Number(a.task._flowColumnIndex || 0);
+        const bc = Number(b.task._flowColumnIndex || 0);
+        if (ac !== bc) return ac - bc;
+        const ai = Number(a.task._flowIndexInColumn || 0);
+        const bi = Number(b.task._flowIndexInColumn || 0);
+        if (ai !== bi) return ai - bi;
+        return String(a.id).localeCompare(String(b.id));
+      }).forEach(function (node, index, ordered) {
+        if (index >= ordered.length - 1) return;
+        const target = ordered[index + 1];
+        const pairKey = node.id + "->" + target.id;
+        if (existingPairs[pairKey]) return;
+        connections.push({
+          from: node,
+          to: target,
+          tone: node.status === "running" || target.status === "running" ? "running" : flowStatusMeta(node.status).tone,
+        });
+        existingPairs[pairKey] = true;
+      });
+    }
     if (!connections.length && nodes.length > 1) {
       nodes.slice().sort(function (a, b) {
+        if (isAllFlow) {
+          const ac = Number(a.task._flowColumnIndex || 0);
+          const bc = Number(b.task._flowColumnIndex || 0);
+          if (ac !== bc) return ac - bc;
+          const ai = Number(a.task._flowIndexInColumn || 0);
+          const bi = Number(b.task._flowIndexInColumn || 0);
+          if (ai !== bi) return ai - bi;
+          return String(a.id).localeCompare(String(b.id));
+        }
         const ap = Number(a.task.priority || 0);
         const bp = Number(b.task.priority || 0);
         if (bp !== ap) return bp - ap;
@@ -3040,7 +3097,7 @@
           connections.push({
             from: node,
             to: ordered[index + 1],
-            tone: flowStatusMeta(node.status).tone,
+            tone: node.status === "running" || ordered[index + 1].status === "running" ? "running" : flowStatusMeta(node.status).tone,
           });
         }
       });
@@ -3054,10 +3111,11 @@
     });
 
     const lanes = presentRoles.map(function (role, index) {
+      const meta = isAllFlow ? flowStatusMeta(role) : flowRoleMeta({ assignee: role });
       return {
         key: role,
-        label: flowRoleMeta({ assignee: role }).label,
-        tone: flowRoleMeta({ assignee: role }).tone,
+        label: meta.label,
+        tone: meta.tone,
         x: marginX + index * columnWidth,
       };
     });
@@ -3076,7 +3134,9 @@
       canvasWidth: Math.max(1080, fallbackWidth, maxRight + marginX),
       canvasHeight: Math.max(520, fallbackHeight, maxBottom + marginY),
       truncated: allBoardTasks.filter(function (task) {
-        return (task._flowStatus || "unknown") === selectedName;
+        const taskStatus = task._flowStatus || "unknown";
+        if (isAllFlow) return !FLOW_ALL_EXCLUDED_STATUSES[taskStatus];
+        return taskStatus === selectedName;
       }).length > visibleTasks.length,
       nodeWidth,
       nodeHeight,
@@ -3113,12 +3173,19 @@
   }
 
   function selectedFlowStatus(columns, current) {
+    if (current === FLOW_ALL_STATUS) return FLOW_ALL_STATUS;
     if (columns.some(function (column) { return column.name === current; })) return current;
     if (columns.some(function (column) { return column.name === "running"; })) return "running";
     return (columns[0] && columns[0].name) || "running";
   }
 
   function taskCountForStatus(columns, status) {
+    if (status === FLOW_ALL_STATUS) {
+      return columns.reduce(function (sum, column) {
+        if (FLOW_ALL_EXCLUDED_STATUSES[column.name]) return sum;
+        return sum + ((column.tasks && column.tasks.length) || 0);
+      }, 0);
+    }
     const column = columns.find(function (item) { return item.name === status; });
     return column && column.tasks ? column.tasks.length : 0;
   }
@@ -3257,7 +3324,7 @@
     const [zoom, setZoom] = useState(1);
     const zoomRef = useRef(1);
     const [draggingNodeId, setDraggingNodeId] = useState(null);
-    const [selectedStatus, setSelectedStatus] = useState("running");
+    const [selectedStatus, setSelectedStatus] = useState(FLOW_ALL_STATUS);
     const columns = (board && Array.isArray(board.columns)) ? board.columns : [];
     const safeSelectedStatus = selectedFlowStatus(columns, selectedStatus);
     const layoutKey = flowLayoutStorageKey(props.boardSlug || (props.boardMeta && props.boardMeta.slug) || "default", safeSelectedStatus);
@@ -3274,6 +3341,7 @@
     const totalTasks = columns.reduce(function (sum, column) {
       return sum + ((column.tasks && column.tasks.length) || 0);
     }, 0);
+    const activeTasks = taskCountForStatus(columns, FLOW_ALL_STATUS);
     const selectedStatusMeta = flowStatusMeta(safeSelectedStatus);
     const moveNode = useCallback(function (nodeId, x, y) {
       setNodeLayout(function (current) {
@@ -3341,30 +3409,46 @@
       return function () { wrap.removeEventListener("wheel", handleFlowWheel); };
     }, [handleFlowWheel]);
     const zoomPercent = Math.round(zoom * 100);
-    const selectedCount = taskCountForStatus(columns, safeSelectedStatus);
+    const selectedCount = flow.selectedCount;
+    const railItems = [{
+      name: FLOW_ALL_STATUS,
+      label: "All",
+      count: activeTasks,
+      help: "Show every non-done task as one connected workflow.",
+      virtual: true,
+    }].concat(columns.map(function (column) {
+      const meta = flowStatusMeta(column.name);
+      return {
+        name: column.name,
+        label: meta.label,
+        count: (column.tasks && column.tasks.length) || 0,
+        help: `Show ${meta.label} tasks in the workflow canvas.`,
+        virtual: false,
+      };
+    }));
 
     return h("div", { className: "hermes-kanban-flow" },
       h("aside", { className: "hermes-kanban-flow-rail" },
         h("div", { className: "hermes-kanban-flow-rail-title" }, "Kanban Flow"),
         h("div", { className: "hermes-kanban-flow-rail-subtitle" },
-          `${selectedStatusMeta.label} - ${selectedCount} of ${totalTasks} task${totalTasks === 1 ? "" : "s"}`),
-        columns.map(function (column) {
-          const meta = flowStatusMeta(column.name);
-          const count = (column.tasks && column.tasks.length) || 0;
-          const active = safeSelectedStatus === column.name;
+          `${selectedStatusMeta.label} - ${selectedCount} of ${activeTasks} active task${activeTasks === 1 ? "" : "s"}`),
+        railItems.map(function (item) {
+          const meta = flowStatusMeta(item.name);
+          const count = item.count || 0;
+          const active = safeSelectedStatus === item.name;
           return h("button", {
-            key: column.name,
+            key: item.name,
             type: "button",
             className: cn(
               "hermes-kanban-flow-rail-item",
               active ? "hermes-kanban-flow-rail-item--active" : "",
               `hermes-kanban-flow-rail-item--${flowClassName(meta.tone)}`,
             ),
-            onClick: function () { setSelectedStatus(column.name); },
-            title: `Show ${meta.label} tasks in the workflow canvas.`,
+            onClick: function () { setSelectedStatus(item.name); },
+            title: item.help,
           },
             h("span", { className: "hermes-kanban-flow-rail-copy" },
-              h("strong", null, meta.label),
+              h("strong", null, item.label || meta.label),
               h("span", null, count ? `${count} task${count === 1 ? "" : "s"}` : "No task"),
             ),
             h("span", { className: "hermes-kanban-flow-rail-count" }, count),
@@ -3411,7 +3495,7 @@
               }, "+"),
             ),
             h("div", { className: "hermes-kanban-flow-legend" },
-              ["ready", "running", "review", "blocked", "done"].map(function (status) {
+              ["triage", "todo", "scheduled", "ready", "running", "review", "blocked"].map(function (status) {
                 const meta = flowStatusMeta(status);
                 return h("span", {
                   key: status,
@@ -3428,7 +3512,9 @@
         },
           selectedCount === 0 ? h("div", { className: "hermes-kanban-flow-empty" },
             h("div", { className: "hermes-kanban-flow-empty-node" }, "AI"),
-            h("div", null, `No ${selectedStatusMeta.label.toLowerCase()} tasks for this workflow.`),
+            h("div", null, safeSelectedStatus === FLOW_ALL_STATUS
+              ? "No active tasks for this workflow."
+              : `No ${selectedStatusMeta.label.toLowerCase()} tasks for this workflow.`),
           ) : h("div", {
             className: "hermes-kanban-flow-zoom-space",
             style: {

@@ -1840,6 +1840,9 @@
 .hermes-kanban-flow-tone--done::before { background: #32ce72; }
 .hermes-kanban-flow-tone--ready::before { background: #62c7ff; }
 .hermes-kanban-flow-tone--scheduled::before { background: #62c7ff; }
+.hermes-kanban-flow-tone--all::before,
+.hermes-kanban-flow-tone--triage::before,
+.hermes-kanban-flow-tone--todo::before { background: #aaa4b8; }
 
 .hermes-kanban-flow-canvas-wrap {
   position: relative;
@@ -1880,9 +1883,7 @@
   stroke-linecap: round;
 }
 
-.hermes-kanban-flow-wire--running,
-.hermes-kanban-flow-wire--review,
-.hermes-kanban-flow-wire--blocked {
+.hermes-kanban-flow-wire--running {
   stroke-dasharray: 8 14;
   animation: hermes-kanban-flow-move 1.15s linear infinite;
 }
@@ -1910,8 +1911,54 @@
   stroke: rgba(98, 199, 255, 0.64);
 }
 
+.hermes-kanban-flow-wire--triage,
+.hermes-kanban-flow-wire--todo,
+.hermes-kanban-flow-wire--ready {
+  stroke: rgba(170, 164, 184, 0.68);
+}
+
 @keyframes hermes-kanban-flow-move {
   to { stroke-dashoffset: -22; }
+}
+
+@keyframes hermes-kanban-running-node-pulse {
+  0%, 100% {
+    border-color: #ff6a3d;
+    box-shadow:
+      0 0 0 1px rgba(255, 106, 61, 0.34),
+      0 0 24px rgba(255, 106, 61, 0.22),
+      0 14px 34px rgba(0, 0, 0, 0.34);
+  }
+  50% {
+    border-color: #ff9a5f;
+    box-shadow:
+      0 0 0 1px rgba(255, 154, 95, 0.56),
+      0 0 42px rgba(255, 106, 61, 0.38),
+      0 18px 42px rgba(0, 0, 0, 0.42);
+  }
+}
+
+@keyframes hermes-kanban-running-border-orbit {
+  0% {
+    clip-path: inset(0 82% 0 0 round 0.62rem);
+    opacity: 0.52;
+  }
+  25% {
+    clip-path: inset(0 0 82% 0 round 0.62rem);
+    opacity: 1;
+  }
+  50% {
+    clip-path: inset(0 0 0 82% round 0.62rem);
+    opacity: 0.72;
+  }
+  75% {
+    clip-path: inset(82% 0 0 0 round 0.62rem);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 82% 0 0 round 0.62rem);
+    opacity: 0.52;
+  }
 }
 
 .hermes-kanban-flow-lane-label {
@@ -1935,20 +1982,44 @@
   padding: 0.72rem 0.78rem;
   border: 1.5px solid rgba(166, 160, 181, 0.76);
   border-radius: 0.5rem;
-  background: linear-gradient(180deg, rgba(48, 43, 58, 0.98), rgba(35, 30, 43, 0.98));
+  background: rgb(35, 30, 43) !important;
+  background-image: linear-gradient(180deg, rgb(48, 43, 58), rgb(35, 30, 43)) !important;
+  background-color: rgb(35, 30, 43) !important;
   color: #fff8f1;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
   text-align: left;
   cursor: grab;
   touch-action: none;
   user-select: none;
+  opacity: 1 !important;
+  filter: none;
+  backdrop-filter: none;
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-.hermes-kanban-flow-node:hover {
-  transform: translateY(-1px);
+.hermes-kanban-flow-node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgb(48, 43, 58), rgb(35, 30, 43));
+  opacity: 1;
+  pointer-events: none;
+}
+
+.hermes-kanban-flow-node:hover,
+.hermes-kanban-flow-node:focus,
+.hermes-kanban-flow-node:focus-visible {
+  transform: scale(0.985);
   border-color: rgba(255, 248, 241, 0.9);
+  background: rgb(35, 30, 43) !important;
+  background-image: linear-gradient(180deg, rgb(48, 43, 58), rgb(35, 30, 43)) !important;
+  background-color: rgb(35, 30, 43) !important;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
 }
 
 .hermes-kanban-flow-node:active,
@@ -1956,11 +2027,31 @@
   cursor: grabbing;
   transform: scale(1.015);
   z-index: 6;
+  opacity: 1 !important;
+  background: rgb(35, 30, 43) !important;
+  background-image: linear-gradient(180deg, rgb(48, 43, 58), rgb(35, 30, 43)) !important;
+  background-color: rgb(35, 30, 43) !important;
+  filter: none !important;
 }
 
 .hermes-kanban-flow-node--running {
   border-color: #ff6a3d;
   box-shadow: 0 0 0 1px rgba(255, 106, 61, 0.34), 0 0 32px rgba(255, 106, 61, 0.24);
+  animation: hermes-kanban-running-node-pulse 1.65s ease-in-out infinite;
+}
+
+.hermes-kanban-flow-node--running::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 1px solid rgba(255, 106, 61, 0.72);
+  border-radius: 0.62rem;
+  pointer-events: none;
+  box-shadow:
+    0 0 12px rgba(255, 106, 61, 0.42),
+    inset 0 0 10px rgba(255, 106, 61, 0.22);
+  opacity: 0.9;
+  animation: hermes-kanban-running-border-orbit 1.1s linear infinite;
 }
 
 .hermes-kanban-flow-node--review {
@@ -1979,6 +2070,8 @@
 }
 
 .hermes-kanban-flow-node-icon {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2001,6 +2094,8 @@
 .hermes-kanban-flow-role--cnt .hermes-kanban-flow-node-icon { color: #6ce8c6; }
 
 .hermes-kanban-flow-node-text {
+  position: relative;
+  z-index: 1;
   display: grid;
   min-width: 0;
   gap: 0.18rem;
@@ -2027,6 +2122,7 @@
 
 .hermes-kanban-flow-handle {
   position: absolute;
+  z-index: 2;
   top: 50%;
   width: 0.78rem;
   height: 0.78rem;
@@ -2040,6 +2136,7 @@
 
 .hermes-kanban-flow-resize {
   position: absolute;
+  z-index: 2;
   right: 0.22rem;
   bottom: 0.22rem;
   width: 1rem;
